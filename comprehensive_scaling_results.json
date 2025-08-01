@@ -1,0 +1,449 @@
+{
+  "vocab_scaling": {
+    "50": {
+      "learned": {
+        "mean_final_loss": 3.94282471246953,
+        "std_final_loss": 0.017145341121304607,
+        "all_runs": [
+          3.9455602589842758,
+          3.9244760584601126,
+          3.958437819964201
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 3.9648576239185735,
+        "std_final_loss": 0.04294328893136776,
+        "all_runs": [
+          3.95585419509133,
+          4.011588827628865,
+          3.927129849035526
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 50,
+      "embedding_dim": 8
+    },
+    "100": {
+      "learned": {
+        "mean_final_loss": 4.637733436265968,
+        "std_final_loss": 0.09176442936711073,
+        "all_runs": [
+          4.693278719253742,
+          4.531815086953753,
+          4.688106502590409
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.655753342959786,
+        "std_final_loss": 0.03340506119816403,
+        "all_runs": [
+          4.644767748788588,
+          4.629224496518194,
+          4.693267783572574
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "500": {
+      "learned": {
+        "mean_final_loss": 6.2404482341700485,
+        "std_final_loss": 0.018811103874261857,
+        "all_runs": [
+          6.231140441422885,
+          6.262098641203179,
+          6.228105619884082
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 6.218410682497865,
+        "std_final_loss": 0.021124246343766143,
+        "all_runs": [
+          6.242012754888414,
+          6.201276690485637,
+          6.211942602119544
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 500,
+      "embedding_dim": 8
+    }
+  },
+  "compression_scaling": {
+    "2.0": {
+      "learned": {
+        "mean_final_loss": 4.6129443865421464,
+        "std_final_loss": 0.03971398457589755,
+        "all_runs": [
+          4.568457811265336,
+          4.644826607524037,
+          4.625548740837065
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.632097582954394,
+        "std_final_loss": 0.045226828044714056,
+        "all_runs": [
+          4.655355310751423,
+          4.660962848856081,
+          4.579974589255677
+        ]
+      },
+      "compression_ratio": 2.0,
+      "vocab_size": 100,
+      "embedding_dim": 16
+    },
+    "4.0": {
+      "learned": {
+        "mean_final_loss": 4.596576901912405,
+        "std_final_loss": 0.04683175446649681,
+        "all_runs": [
+          4.624873354636057,
+          4.542520076240984,
+          4.6223372748601745
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.605468633725907,
+        "std_final_loss": 0.07189178563494124,
+        "all_runs": [
+          4.688251276459241,
+          4.558719664708978,
+          4.569434960009505
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "8.0": {
+      "learned": {
+        "mean_final_loss": 4.614087795519836,
+        "std_final_loss": 0.01276550526106383,
+        "all_runs": [
+          4.626291972619638,
+          4.6008266797624335,
+          4.615144734177436
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.618815498768326,
+        "std_final_loss": 0.05544995284326312,
+        "all_runs": [
+          4.604114110445653,
+          4.680134694450082,
+          4.572197691409242
+        ]
+      },
+      "compression_ratio": 8.0,
+      "vocab_size": 100,
+      "embedding_dim": 4
+    },
+    "16.0": {
+      "learned": {
+        "mean_final_loss": 4.597701657655443,
+        "std_final_loss": 0.09586567417310957,
+        "all_runs": [
+          4.707140279570987,
+          4.557391319929126,
+          4.528573373466216
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.600469305474589,
+        "std_final_loss": 0.01727664941613327,
+        "all_runs": [
+          4.618071151447779,
+          4.599799426627589,
+          4.583537338348399
+        ]
+      },
+      "compression_ratio": 16.0,
+      "vocab_size": 100,
+      "embedding_dim": 4
+    }
+  },
+  "dataset_scaling": {
+    "patterns": {
+      "learned": {
+        "mean_final_loss": 4.618570265210472,
+        "std_final_loss": 0.0059425493263649985,
+        "all_runs": [
+          4.6132421181746395,
+          4.624978938756388,
+          4.61748973870039
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.616033075478212,
+        "std_final_loss": 0.05139589783621888,
+        "all_runs": [
+          4.673296420492999,
+          4.573902502916402,
+          4.600900303025234
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "structured": {
+      "learned": {
+        "mean_final_loss": 4.617096097400871,
+        "std_final_loss": 0.040904819046607796,
+        "all_runs": [
+          4.644187115685404,
+          4.570042950808822,
+          4.637058225708386
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.643838649217819,
+        "std_final_loss": 0.018308489837161657,
+        "all_runs": [
+          4.647569971610556,
+          4.623951924650535,
+          4.659994051392365
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "random": {
+      "learned": {
+        "mean_final_loss": 4.618780459884851,
+        "std_final_loss": 0.0028413297087585723,
+        "all_runs": [
+          4.616312339010996,
+          4.618142505624213,
+          4.621886535019345
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.61697001327099,
+        "std_final_loss": 0.003550168778546642,
+        "all_runs": [
+          4.613061870329656,
+          4.619995771458354,
+          4.617852398024959
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    }
+  },
+  "architecture_scaling": {
+    "16d_1l": {
+      "learned": {
+        "mean_final_loss": 4.610052219634003,
+        "std_final_loss": 0.03679725019838241,
+        "all_runs": [
+          4.5784461009021244,
+          4.60126203671284,
+          4.6504485212870454
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.621869395205351,
+        "std_final_loss": 0.011718196687259106,
+        "all_runs": [
+          4.634397828309048,
+          4.620031792096752,
+          4.611178565210255
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "16d_2l": {
+      "learned": {
+        "mean_final_loss": 4.646252263360026,
+        "std_final_loss": 0.006117023267820109,
+        "all_runs": [
+          4.639207582182596,
+          4.650218815599116,
+          4.649330392298365
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.587843948168279,
+        "std_final_loss": 0.013831145794567835,
+        "all_runs": [
+          4.596412291944155,
+          4.595231888672467,
+          4.571887663888217
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "16d_3l": {
+      "learned": {
+        "mean_final_loss": 4.629537854669439,
+        "std_final_loss": 0.044609659393334014,
+        "all_runs": [
+          4.651110900657447,
+          4.578242388511132,
+          4.659260274839738
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.625712820483262,
+        "std_final_loss": 0.03502563724424912,
+        "all_runs": [
+          4.619653102261524,
+          4.66337294274171,
+          4.594112416446552
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "32d_1l": {
+      "learned": {
+        "mean_final_loss": 4.588343067743266,
+        "std_final_loss": 0.019595798202280693,
+        "all_runs": [
+          4.565799026476051,
+          4.601294361937396,
+          4.597935814816353
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.595983267213119,
+        "std_final_loss": 0.005929156288546934,
+        "all_runs": [
+          4.602585511168896,
+          4.594251436589734,
+          4.591112853880727
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "32d_2l": {
+      "learned": {
+        "mean_final_loss": 4.620267656610186,
+        "std_final_loss": 0.029352191909244013,
+        "all_runs": [
+          4.654141182717654,
+          4.6043255501112785,
+          4.602336237001624
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.59686761931736,
+        "std_final_loss": 0.024958119249190475,
+        "all_runs": [
+          4.615973928799408,
+          4.605999202196621,
+          4.568629726956049
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "32d_3l": {
+      "learned": {
+        "mean_final_loss": 4.625726742002943,
+        "std_final_loss": 0.028911895606026805,
+        "all_runs": [
+          4.592896046753925,
+          4.647386781671164,
+          4.636897397583739
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.604945159829704,
+        "std_final_loss": 0.023590000634847307,
+        "all_runs": [
+          4.61435672136745,
+          4.578102192879701,
+          4.622376565241961
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "64d_1l": {
+      "learned": {
+        "mean_final_loss": 4.606407931138351,
+        "std_final_loss": 0.011031184742112413,
+        "all_runs": [
+          4.609015851813572,
+          4.594306466499819,
+          4.615901475101663
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.652949730941439,
+        "std_final_loss": 0.036005893582536745,
+        "all_runs": [
+          4.6126931655123355,
+          4.682076962348265,
+          4.664079064963716
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "64d_2l": {
+      "learned": {
+        "mean_final_loss": 4.598053112206502,
+        "std_final_loss": 0.05291144322350666,
+        "all_runs": [
+          4.656685028359762,
+          4.583614809527889,
+          4.553859498731854
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.647878529014519,
+        "std_final_loss": 0.03426850290488976,
+        "all_runs": [
+          4.625008549144735,
+          4.631348302931843,
+          4.687278734966978
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    },
+    "64d_3l": {
+      "learned": {
+        "mean_final_loss": 4.643103850556593,
+        "std_final_loss": 0.05847299565243732,
+        "all_runs": [
+          4.676111025457804,
+          4.575590597116583,
+          4.677609929095391
+        ]
+      },
+      "traditional": {
+        "mean_final_loss": 4.701363061437177,
+        "std_final_loss": 0.06470875033854168,
+        "all_runs": [
+          4.704961186995574,
+          4.764197677879613,
+          4.634930319436343
+        ]
+      },
+      "compression_ratio": 4.0,
+      "vocab_size": 100,
+      "embedding_dim": 8
+    }
+  },
+  "statistical_summary": {},
+  "meta_analysis": {}
+}

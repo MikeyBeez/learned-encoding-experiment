@@ -1,0 +1,86 @@
+{
+  "compression_2.0": {
+    "learned": 4.60221955527854,
+    "traditional": 4.594716392908537,
+    "ratio": 0.9983696644021692,
+    "success": true
+  },
+  "compression_4.0": {
+    "learned": 4.604978834570983,
+    "traditional": 4.607241943241947,
+    "ratio": 1.000491448224251,
+    "success": true
+  },
+  "compression_8.0": {
+    "learned": 4.605846972318186,
+    "traditional": 4.604867950528327,
+    "ratio": 0.9997874393578982,
+    "success": true
+  },
+  "compression_16.0": {
+    "learned": 4.600665647512579,
+    "traditional": 4.6051567940803855,
+    "ratio": 1.000976194949145,
+    "success": true
+  },
+  "compression_32.0": {
+    "learned": 4.6064112534682105,
+    "traditional": 4.603800476924775,
+    "ratio": 0.99943322981823,
+    "success": true
+  },
+  "vocab_50": {
+    "learned": 3.9108937476979286,
+    "traditional": 3.9064977117402453,
+    "ratio": 0.9988759510635463,
+    "success": true
+  },
+  "vocab_100": {
+    "learned": 4.60681763857561,
+    "traditional": 4.606951179869745,
+    "ratio": 1.000028987753502,
+    "success": true
+  },
+  "vocab_200": {
+    "learned": 5.302235691079958,
+    "traditional": 5.296115810747968,
+    "ratio": 0.998845792475373,
+    "success": true
+  },
+  "vocab_500": {
+    "learned": 6.2143217889615645,
+    "traditional": 6.21300481341102,
+    "ratio": 0.9997880741301676,
+    "success": true
+  },
+  "vocab_1000": {
+    "learned": 6.905117562446848,
+    "traditional": 6.909111496829922,
+    "ratio": 1.0005784020832311,
+    "success": true
+  },
+  "dataset_simple_patterns": {
+    "learned": 4.608127302534197,
+    "traditional": 4.606901608794046,
+    "ratio": 0.9997340147830818,
+    "success": true
+  },
+  "dataset_complex_patterns": {
+    "learned": 4.6025688845849615,
+    "traditional": 4.6038046527829986,
+    "ratio": 1.000268495318381,
+    "success": true
+  },
+  "dataset_structured": {
+    "learned": 4.603907316598667,
+    "traditional": 4.609237538427705,
+    "ratio": 1.0011577604548687,
+    "success": true
+  },
+  "dataset_random": {
+    "learned": 4.603537674171837,
+    "traditional": 4.602654995849912,
+    "ratio": 0.9998082608670986,
+    "success": true
+  }
+}
