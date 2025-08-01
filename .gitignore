@@ -1,0 +1,72 @@
+# .gitignore for Learned Encoding Experiment
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Experiment outputs
+*.png
+*.jpg
+*.pdf
+results/
+outputs/
+plots/
+
+# Logs
+*.log
+logs/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# PyTorch
+*.pth
+*.pt
+
+# Data files
+data/
+datasets/
+*.csv
+*.tsv
+*.json.bak
+
+# Temporary files
+tmp/
+temp/
+*.tmp
