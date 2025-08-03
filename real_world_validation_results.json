@@ -1,0 +1,34 @@
+{
+  "compression_scaling": {
+    "8.0": {
+      "learned_loss_mean": 7.416371368780369,
+      "learned_loss_std": 0.0,
+      "traditional_loss_mean": 7.392152914186803,
+      "traditional_loss_std": 0.0,
+      "p_value": 1.0,
+      "significant": false,
+      "effect_size": -0.024218454593565752,
+      "learned_perplexity_mean": 1662.9881754259534,
+      "traditional_perplexity_mean": 1623.1969575988326,
+      "runs": 1,
+      "raw_learned_losses": [
+        7.416371368780369
+      ],
+      "raw_traditional_losses": [
+        7.392152914186803
+      ]
+    }
+  },
+  "vocabulary_scaling": {},
+  "complexity_scaling": {},
+  "baseline_comparisons": {},
+  "architecture_ablations": {},
+  "statistical_analysis": {},
+  "theoretical_validation": {},
+  "replication_package": {},
+  "metadata": {
+    "compression_ratios_tested": [
+      8.0
+    ]
+  }
+}

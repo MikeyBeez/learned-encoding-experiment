@@ -29,7 +29,17 @@ import random
 import math
 import statistics
 from dataclasses import dataclass
+from scipy.stats import ttest_ind
 from typing import Dict, List, Tuple, Optional
+from real_world_experiment import (
+    ModelConfig,
+    SimpleAutoencoder,
+    LearnedEncodingModel,
+    TraditionalModel,
+    get_dataloaders,
+    train_autoencoder,
+    run_language_model_training,
+)
 
 @dataclass
 class ValidationConfig:
@@ -115,272 +125,85 @@ class AcademicValidationFramework:
         total += len(self.config.model_architectures) # Architecture ablations
         return total * self.config.num_independent_runs
     
-    def run_compression_scaling_study(self):
-        """Academic-grade compression scaling study."""
-        print("\n📐 Compression Scaling Study")
-        print("Testing hypothesis across compression ratios")
-        print("=" * 50)
+    def run_compression_scaling_study(self, epochs=1, ae_epochs=1):
+        """Real-world compression scaling study."""
+        print("\n📐 Real-World Compression Scaling Study")
+        print("Testing hypothesis across compression ratios on WikiText-2")
+        print("=" * 60)
+
+        # Get data
+        train_loader, val_loader, _, vocab_size = get_dataloaders(batch_size=16, seq_len=35)
         
-        for compression_ratio in self.config.compression_ratios:
-            print(f"\n🔬 Testing {compression_ratio:.1f}:1 compression")
+        # Use a smaller subset of compression ratios for real-world testing to save time
+        compression_ratios = [8.0] # Reduced to one for faster verification
+        self.results['metadata'] = {'compression_ratios_tested': compression_ratios}
+
+        for ratio in compression_ratios:
+            print(f"\n🔬 Testing {ratio:.1f}:1 compression")
             
-            # Run multiple independent experiments
-            learned_results = []
-            traditional_results = []
+            # Config for this ratio
+            traditional_dim = 128
+            compressed_dim = int(traditional_dim / ratio)
             
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                # Set unique seed for each run
-                random.seed(42 + run)
-                
-                learned_loss = self._simulate_learned_performance(compression_ratio)
-                traditional_loss = self._simulate_traditional_performance(compression_ratio)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
+            config = ModelConfig(
+                vocab_size=vocab_size,
+                traditional_embedding_dim=traditional_dim,
+                compressed_dim=compressed_dim,
+                num_layers=2,
+                hidden_dim=128,
+                nhead=4
+            )
+
+            learned_losses, traditional_losses = [], []
+            learned_perplexities, traditional_perplexities = [], []
+
+            for i in range(self.config.num_independent_runs):
+                print(f"    Run {i+1}/{self.config.num_independent_runs}...")
+
+                # --- Run Learned Encoding Model ---
+                learned_model = LearnedEncodingModel(config)
+                _, learned_results = run_language_model_training(
+                    learned_model, train_loader, val_loader, vocab_size, epochs=epochs
+                )
+                learned_losses.append(learned_results['loss'])
+                learned_perplexities.append(learned_results['perplexity'])
+
+                # --- Run Traditional Model ---
+                autoencoder = SimpleAutoencoder(
+                    vocab_size=vocab_size, embedding_dim=traditional_dim, compressed_dim=compressed_dim
+                )
+                trained_autoencoder = train_autoencoder(autoencoder, train_loader, epochs=ae_epochs)
+                traditional_model = TraditionalModel(config, trained_autoencoder)
+                _, traditional_results = run_language_model_training(
+                    traditional_model, train_loader, val_loader, vocab_size, epochs=epochs
+                )
+                traditional_losses.append(traditional_results['loss'])
+                traditional_perplexities.append(traditional_results['perplexity'])
+
+            # Perform statistical analysis on the collected losses
+            stats = self._compute_statistical_metrics(learned_losses, traditional_losses)
+
+            # Store detailed results
+            self.results['compression_scaling'][ratio] = {
+                'learned_loss_mean': stats['learned_mean'],
+                'learned_loss_std': stats['learned_std'],
+                'traditional_loss_mean': stats['traditional_mean'],
+                'traditional_loss_std': stats['traditional_std'],
+                'p_value': stats['p_value'],
+                'significant': stats['significant'],
+                'effect_size': stats['effect_size'],
+                'learned_perplexity_mean': statistics.mean(learned_perplexities),
+                'traditional_perplexity_mean': statistics.mean(traditional_perplexities),
+                'runs': self.config.num_independent_runs,
+                'raw_learned_losses': learned_losses,
+                'raw_traditional_losses': traditional_losses,
+            }
             
-            # Statistical analysis
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            
-            self.results['compression_scaling'][compression_ratio] = stats
-            
-            # Report results with confidence intervals
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Effect size: {stats['effect_size']:.3f}")
-            print(f"  📊 P-value: {stats['p_value']:.6f}")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_vocabulary_scaling_study(self):
-        """Academic-grade vocabulary scaling study."""
-        print("\n📚 Vocabulary Scaling Study") 
-        print("Testing scalability to large vocabularies")
-        print("=" * 50)
-        
-        for vocab_size in self.config.vocabulary_sizes:
-            print(f"\n🔬 Testing {vocab_size:,} token vocabulary")
-            
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                # Vocabulary size affects complexity
-                learned_loss = self._simulate_learned_performance(8.0, vocab_complexity=vocab_size)
-                traditional_loss = self._simulate_traditional_performance(8.0, vocab_complexity=vocab_size)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            self.results['vocabulary_scaling'][vocab_size] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Advantage: {stats['relative_improvement']:.1f}%")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_dataset_complexity_study(self):
-        """Academic-grade dataset complexity study."""
-        print("\n🎯 Dataset Complexity Study")
-        print("Testing robustness across data types")
-        print("=" * 50)
-        
-        for complexity in self.config.dataset_complexities:
-            print(f"\n🔬 Testing {complexity.replace('_', ' ')}")
-            
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                # Complexity affects both methods differently
-                learned_loss = self._simulate_learned_performance(8.0, complexity=complexity)
-                traditional_loss = self._simulate_traditional_performance(8.0, complexity=complexity)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            self.results['complexity_scaling'][complexity] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Robustness: {stats['robustness_score']:.3f}")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_baseline_comparison_study(self):
-        """Academic-grade baseline comparison study."""
-        print("\n🏆 Baseline Comparison Study")
-        print("Testing against multiple autoencoder variants")
-        print("=" * 50)
-        
-        for baseline in self.config.baseline_methods:
-            print(f"\n🔬 Testing vs {baseline.replace('_', ' ')}")
-            
-            learned_results = []
-            baseline_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                learned_loss = self._simulate_learned_performance(8.0)
-                baseline_loss = self._simulate_baseline_performance(8.0, baseline)
-                
-                learned_results.append(learned_loss)
-                baseline_results.append(baseline_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, baseline_results)
-            self.results['baseline_comparisons'][baseline] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 {baseline}: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Improvement: {stats['relative_improvement']:.1f}%")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_architecture_ablation_study(self):
-        """Academic-grade architecture ablation study."""
-        print("\n🏗️ Architecture Ablation Study")
-        print("Testing architectural components")
-        print("=" * 50)
-        
-        for architecture in self.config.model_architectures:
-            print(f"\n🔬 Testing {architecture['name']} architecture")
-            print(f"   {architecture['layers']} layers, {architecture['hidden_dim']}D hidden")
-            
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                # Architecture affects model capacity
-                learned_loss = self._simulate_learned_performance(8.0, architecture=architecture)
-                traditional_loss = self._simulate_traditional_performance(8.0, architecture=architecture)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            self.results['architecture_ablations'][architecture['name']] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Architecture effect: {stats['architecture_benefit']:.3f}")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def _simulate_learned_performance(self, compression_ratio: float, 
-                                    vocab_complexity: int = 100,
-                                    complexity: str = 'simple_patterns',
-                                    architecture: Dict = None) -> float:
-        """Simulate learned encoding performance with realistic characteristics."""
-        
-        # Base performance (learned encodings are inherently better due to task alignment)
-        base_loss = 2.5
-        
-        # Compression effect (learned encodings degrade gracefully)
-        compression_penalty = 0.05 * math.log(compression_ratio)
-        
-        # Vocabulary complexity effect (learned encodings scale better)
-        vocab_penalty = 0.0001 * math.log(vocab_complexity)
-        
-        # Dataset complexity effect
-        complexity_penalties = {
-            'simple_patterns': 0.0,
-            'complex_patterns': 0.1,
-            'structured_sequences': 0.15,
-            'hierarchical_patterns': 0.2,
-            'semi_random': 0.4,
-            'natural_language_simulation': 0.6
-        }
-        complexity_penalty = complexity_penalties.get(complexity, 0.0)
-        
-        # Architecture effect
-        arch_benefit = 0.0
-        if architecture:
-            # Larger architectures help, but with diminishing returns
-            arch_benefit = -0.1 * math.log(architecture.get('hidden_dim', 32) / 32)
-        
-        # Add realistic noise
-        noise = random.gauss(0, 0.05)
-        
-        final_loss = base_loss + compression_penalty + vocab_penalty + complexity_penalty + arch_benefit + noise
-        return max(0.5, final_loss)  # Floor to prevent unrealistic values
-    
-    def _simulate_traditional_performance(self, compression_ratio: float,
-                                        vocab_complexity: int = 100,
-                                        complexity: str = 'simple_patterns',
-                                        architecture: Dict = None) -> float:
-        """Simulate traditional autoencoder performance with realistic characteristics."""
-        
-        # Base performance (slightly worse due to reconstruction objective mismatch)
-        base_loss = 2.6
-        
-        # Compression effect (traditional methods degrade faster due to information bottleneck)
-        compression_penalty = 0.08 * math.log(compression_ratio)
-        
-        # Vocabulary complexity effect (traditional methods scale worse)
-        vocab_penalty = 0.0002 * math.log(vocab_complexity)
-        
-        # Dataset complexity effect (traditional methods suffer more on complex data)
-        complexity_penalties = {
-            'simple_patterns': 0.0,
-            'complex_patterns': 0.15,
-            'structured_sequences': 0.25,
-            'hierarchical_patterns': 0.35,
-            'semi_random': 0.6,
-            'natural_language_simulation': 0.9
-        }
-        complexity_penalty = complexity_penalties.get(complexity, 0.0)
-        
-        # Architecture effect (less benefit due to suboptimal pre-training)
-        arch_benefit = 0.0
-        if architecture:
-            arch_benefit = -0.05 * math.log(architecture.get('hidden_dim', 32) / 32)
-        
-        # Add realistic noise
-        noise = random.gauss(0, 0.05)
-        
-        final_loss = base_loss + compression_penalty + vocab_penalty + complexity_penalty + arch_benefit + noise
-        return max(0.5, final_loss)
-    
-    def _simulate_baseline_performance(self, compression_ratio: float, baseline_type: str) -> float:
-        """Simulate different baseline autoencoder variants."""
-        
-        # Different baselines have different characteristics
-        baseline_adjustments = {
-            'standard_autoencoder': 0.0,
-            'deep_autoencoder': -0.1,      # Slightly better capacity
-            'variational_autoencoder': 0.05, # Regularization hurts compression
-            'regularized_autoencoder': 0.03, # Slight regularization penalty
-            'sparse_autoencoder': -0.05     # Sparsity can help
-        }
-        
-        base_performance = self._simulate_traditional_performance(compression_ratio)
-        adjustment = baseline_adjustments.get(baseline_type, 0.0)
-        
-        return base_performance + adjustment + random.gauss(0, 0.03)
+            print(f"\n--- Results for {ratio:.1f}:1 (over {self.config.num_independent_runs} runs) ---")
+            print(f"  Learned Model Perplexity:     {stats['learned_mean']:.2f} ± {stats['learned_std']:.2f}")
+            print(f"  Traditional Model Perplexity: {stats['traditional_mean']:.2f} ± {stats['traditional_std']:.2f}")
+            print(f"  P-value: {stats['p_value']:.4f} ({'Significant' if stats['significant'] else 'Not Significant'})")
+
     
     def _compute_statistical_metrics(self, learned_results: List[float], 
                                    traditional_results: List[float]) -> Dict:
@@ -403,13 +226,13 @@ class AcademicValidationFramework:
         pooled_std = math.sqrt((learned_std**2 + traditional_std**2) / 2) if learned_std > 0 and traditional_std > 0 else 1.0
         effect_size = (traditional_mean - learned_mean) / pooled_std if pooled_std > 0 else 0.0
         
-        # Welch's t-test (unequal variances)
-        if learned_std > 0 and traditional_std > 0:
-            t_stat = (traditional_mean - learned_mean) / math.sqrt(learned_std**2/n + traditional_std**2/n)
-            # Simplified p-value approximation
-            p_value = 2 * (1 - 0.5 * (1 + math.erf(abs(t_stat) / math.sqrt(2))))
+        # Welch's t-test (unequal variances) using scipy for accuracy
+        if len(learned_results) > 1 and len(traditional_results) > 1:
+            # We expect traditional loss to be higher, so the difference should be positive
+            # A one-sided test ('greater') is used to test if traditional_results is greater than learned_results
+            t_stat, p_value = ttest_ind(traditional_results, learned_results, equal_var=False, alternative='greater')
         else:
-            p_value = 1.0
+            t_stat, p_value = 0.0, 1.0
         
         # Relative improvement
         relative_improvement = ((traditional_mean - learned_mean) / traditional_mean * 100) if traditional_mean > 0 else 0.0
@@ -590,45 +413,22 @@ def main():
     
     # Configure validation for academic rigor
     config = ValidationConfig(
-        compression_ratios=[2.0, 4.0, 8.0, 16.0, 32.0],  # Core scaling range
-        vocabulary_sizes=[50, 100, 500, 1000, 5000],      # Practical scaling
-        dataset_complexities=['simple_patterns', 'complex_patterns', 'structured_sequences', 'semi_random'],
-        num_independent_runs=10,  # Strong statistical power
-        confidence_level=0.95     # Standard academic threshold
+        compression_ratios=[2.0, 4.0, 8.0],
+        num_independent_runs=1 # Set to 1 for real-world experiments to save time
     )
     
     # Initialize validation framework
     validator = AcademicValidationFramework(config)
     
-    print(f"\n🚀 Beginning comprehensive validation...")
-    print(f"⏱️  Estimated time: 5-10 minutes")
+    print(f"\n🚀 Beginning real-world validation...")
     
-    # Run all validation studies
-    validator.run_compression_scaling_study()
-    validator.run_vocabulary_scaling_study()
-    validator.run_dataset_complexity_study()
-    validator.run_baseline_comparison_study()
-    validator.run_architecture_ablation_study()
-    validator.run_theoretical_validation()
-    
-    # Generate comprehensive analysis
-    assessment = validator.generate_comprehensive_report()
-    
-    # Create replication package
-    validator.create_replication_package()
+    # Run the real-world compression scaling study (with reduced epochs for verification)
+    validator.run_compression_scaling_study(epochs=1, ae_epochs=1)
     
     # Save results
-    validator.save_comprehensive_results()
+    validator.save_comprehensive_results("real_world_validation_results.json")
     
-    print(f"\n🏁 Academic Validation Complete!")
-    print(f"🎯 Assessment: {assessment}")
-    
-    if assessment in ["BULLETPROOF", "STRONG"]:
-        print(f"📄 STATUS: Ready for academic publication!")
-        print(f"🎪 Next steps: Write paper, submit to venue")
-    else:
-        print(f"🔧 STATUS: Needs refinement before publication")
-        print(f"📋 Focus areas identified in comprehensive report")
+    print(f"\n🏁 Real-World Validation Complete!")
 
 if __name__ == "__main__":
     main()

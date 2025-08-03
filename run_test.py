@@ -8,52 +8,35 @@ import subprocess
 
 def main():
     """Run the experiment with dependencies check."""
-    print("🔬 Learned Encoding Experiment - Quick Test")
+    print("🔬 Learned Encoding Experiment - Environment Setup")
     print("=" * 50)
     
-    # Check if we have required packages
+    # Check if we have required packages for real-world validation
     try:
-        import numpy as np
-        import matplotlib.pyplot as plt
-        print("✅ Dependencies found: numpy, matplotlib")
+        import torch
+        import pandas
+        import numpy
+        import sklearn
+        import matplotlib
+        import datasets
+        print("✅ Core dependencies found: torch, pandas, numpy, scikit-learn, matplotlib, datasets")
     except ImportError as e:
-        print(f"❌ Missing dependency: {e}")
-        print("Installing required packages...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "matplotlib"])
-        print("✅ Dependencies installed!")
-    
-    # Run the main experiment
-    try:
-        from learned_encoding_experiment import main as run_experiment
-        run_experiment()
-    except Exception as e:
-        print(f"❌ Error running experiment: {e}")
-        print("Running simplified version...")
-        
-        # Simplified test
-        import numpy as np
-        print("\n🧪 Simplified Test:")
-        print("Testing token encoder learning...")
-        
-        # Simple validation that our approach works
-        vocab_size = 10
-        traditional_dim = 32
-        learned_dim = 4  # 8:1 compression
-        
-        # Traditional approach - autoencoder embeddings
-        autoencoder_embeddings = np.random.normal(0, 0.1, (vocab_size, traditional_dim))
-        compressed_autoencoder = autoencoder_embeddings @ np.random.normal(0, 0.1, (traditional_dim, learned_dim))
-        
-        # Learned approach - direct token encodings
-        learned_encodings = np.random.normal(0, 0.1, (vocab_size, learned_dim))
-        
-        print(f"Traditional embeddings: {traditional_dim}D")
-        print(f"Learned embeddings: {learned_dim}D") 
-        print(f"Compression ratio: {traditional_dim/learned_dim}:1")
-        print(f"Memory savings: {(1 - learned_dim/traditional_dim)*100:.1f}%")
-        
-        print("\n✅ Basic architecture validation complete!")
-        print("💡 Run the full experiment with: python learned_encoding_experiment.py")
+        print(f"❌ Missing core dependency: {e}")
+        print("Installing required packages for real-world validation...")
+        # Install torch for CPU first to save space in constrained environments
+        print("Installing PyTorch (CPU version)...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "torch", "--index-url", "https://download.pytorch.org/whl/cpu"])
+        print("Installing other dependencies...")
+        packages = [
+            "pandas", "numpy", "scikit-learn", "matplotlib", "datasets",
+            "scipy", "PyQt6", "transformers", "huggingface_hub"
+        ]
+        subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
+        print("✅ Core dependencies installed!")
+
+    print("\n✅ Environment is set up for real-world validation.")
+    print("💡 To run the new validation suite, execute:")
+    print("   python3 academic_validation_framework.py")
 
 if __name__ == "__main__":
     main()

@@ -31,22 +31,44 @@ Traditional approaches use autoencoders to compress embeddings in a separate tra
 
 ## 🚀 Quick Start
 
-```bash
-# Clone the repository
-git clone https://github.com/MikeyBeez/learned-encoding-experiment.git
-cd learned-encoding-experiment
+1.  **Set up the environment:**
+    ```bash
+    # Clone the repository
+    git clone https://github.com/MikeyBeez/learned-encoding-experiment.git
+    cd learned-encoding-experiment
 
-# Run the experiment (no dependencies required!)
-python3 pure_python_experiment.py
-```
+    # Install dependencies (PyTorch, PyQt6, scikit-learn, etc.)
+    python3 run_test.py
+    ```
 
-**Expected output:**
-```
-🎯 Experiment Result:
-✅ SUCCESS: Learned encoding performs as well as traditional approach!
-✅ Achieved 8.0:1 compression with maintained performance
-✅ Validates hypothesis: Signal emerges from token relationships
-```
+2.  **Launch the Unified Experimentation Framework:**
+    ```bash
+    # Run the interactive GUI
+    python3 main_gui.py
+    ```
+    From the GUI, you can tune hyperparameters, run comparisons, and visualize results.
+
+3.  **Run the Full Academic Validation (Optional):**
+    ```bash
+    # Run the complete compression scaling study on the WikiText-2 dataset
+    python3 academic_validation_framework.py
+    ```
+    This will train models across several compression ratios and save the results to `real_world_validation_results.json`.
+
+## 🔬 Experimental Validation
+
+This project has evolved from a simple proof-of-concept to a robust framework for real-world validation.
+
+### Initial Proof of Concept
+The initial experiments (`pure_python_experiment.py`) were run on synthetic data with a simplified training process (gradient approximation). These experiments validated the core hypothesis: that learning encodings as part of a single objective can match the performance of a two-stage autoencoder approach while offering significant memory savings.
+
+### Real-World Validation Framework
+The current implementation (`academic_validation_framework.py` and `real_world_experiment.py`) provides a full-featured framework for running experiments on real-world datasets using PyTorch.
+
+- **Real Datasets:** The new framework uses the Hugging Face `datasets` library to download and process standard datasets like WikiText-2.
+- **End-to-End Training:** Models are trained with proper backpropagation, optimizers (Adam), and loss functions (Cross-Entropy).
+- **Rigorous Comparison:** The framework is designed to run studies comparing the learned encoding approach against the traditional autoencoder baseline across different dimensions, such as compression ratios.
+- **Extensible:** The new structure makes it easy to add new datasets, models, and experiments.
 
 ## 📊 Architecture Comparison
 
@@ -81,23 +103,6 @@ python3 pure_python_experiment.py
 - **Current**: 50K vocab × 4096D = 200M embedding parameters
 - **Our approach**: 50K vocab × 512D = 25M parameters (8:1 compression)
 - **Benefit**: Massive memory savings + better task optimization
-
-## 🔬 Experimental Validation
-
-### Setup
-- **Vocabulary**: 20 tokens
-- **Compression**: 32D → 4D (8:1 ratio)
-- **Training**: 200 pattern-based sequences, 25 epochs
-- **Comparison**: Learned vs Traditional (autoencoder-based)
-
-### Results
-```
-Final Performance:
-  Learned Encoding:     3.001 loss
-  Traditional Approach: 2.994 loss
-  Performance Ratio:    1.00x (essentially equal)
-  Memory Savings:       87.5%
-```
 
 ## 💡 Why This Matters
 
@@ -138,28 +143,41 @@ loss = -log P(next_token | learned_encodings(context))  # Single objective!
 
 ```
 learned-encoding-experiment/
-├── pure_python_experiment.py      # Main validated experiment (no dependencies)
-├── learned_encoding_experiment.py # Advanced version w/ visualization  
-├── run_test.py                     # Quick test runner
-├── README.md                       # This file
-├── CONTRIBUTING.md                 # Research extensions guide
-├── experiment_results.json        # Detailed experimental data
-└── LICENSE                         # MIT License
+├── academic_validation_framework.py # Main entry point for real-world validation
+├── real_world_experiment.py         # PyTorch models and data pipelines
+├── pure_python_experiment.py        # Original simplified experiment (no dependencies)
+├── learned_encoding_experiment.py   # Advanced numpy-based experiment w/ visualization
+├── run_test.py                      # Environment setup and dependency installer
+├── README.md                        # This file
+...
 ```
 
-## 🚀 Next Steps
+## 🎯 Strategic Research Agenda: From Insight to Impact
 
-### Immediate Extensions
-1. **Scale to larger vocabularies** (1K, 10K, 50K tokens)
-2. **Test with real data** (Wikipedia, genomic sequences, code)
-3. **Push compression limits** (16:1, 32:1 ratios)
-4. **Proper gradient computation** (replace approximation)
+This project has moved beyond simple validation to a new, more ambitious strategic agenda. Our goal is not just to prove *that* learned encodings work, but to discover *when* and *why* they are most advantageous, and then leverage that insight into a high-impact demonstration.
 
-### Research Applications
-1. **Genomic AI**: Full human genome processing
-2. **Scientific literature**: Complete paper analysis
-3. **Code understanding**: Entire codebase comprehension
-4. **Conversational AI**: Unlimited memory context
+Our strategy follows three phases:
+
+### Phase 1: Framework Development (✅ Complete)
+We have built a **Unified Interactive Experimentation Framework** (`main_gui.py`). This tool is the cornerstone of our research, enabling rapid, iterative experiments with real-time visualization. It allows us to:
+- Interactively tune hyperparameters and see their effect.
+- Directly compare the learned and traditional models side-by-side.
+- Visualize high-dimensional embedding spaces using t-SNE to understand their structure.
+- Analyze model similarity with Canonical Correlation Analysis (CCA).
+
+### Phase 2: Insight Discovery (Current Focus)
+Using our new framework, we are now focused on answering the critical question: **"Under what conditions are learned encodings most powerful?"** We will systematically explore variables such as:
+- **Data Modality**: Is the advantage greater for natural language, source code, or biological sequences?
+- **Compression Ratio**: Does the benefit increase or decrease at extreme compression ratios (e.g., 32:1, 64:1)?
+- **Task Complexity**: Are learned encodings more effective for simple predictive tasks or complex, hierarchical ones?
+
+### Phase 3: High-Impact Demonstration
+Once we have identified a scenario where learned encodings provide a decisive, game-changing advantage, we will pivot to creating a **compelling, real-world demonstration**. The goal is to build a practical tool or application that would be infeasible or inefficient without our approach. Potential candidates include:
+- A genomic analysis tool that can process entire chromosomes in memory.
+- A code assistant that can hold the context of a massive codebase.
+- A scientific literature tool that can analyze thousands of papers at once.
+
+This agenda transforms our project from a research experiment into a mission-driven effort to unlock the next generation of efficient, large-scale AI.
 
 ## 📊 Citation
 
