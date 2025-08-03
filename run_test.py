@@ -27,7 +27,10 @@ def main():
         print("Installing PyTorch (CPU version)...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "torch", "--index-url", "https://download.pytorch.org/whl/cpu"])
         print("Installing other dependencies...")
-        packages = ["pandas", "numpy", "scikit-learn", "matplotlib", "datasets"]
+        packages = [
+            "pandas", "numpy", "scikit-learn", "matplotlib", "datasets",
+            "scipy", "PyQt6", "transformers", "huggingface_hub"
+        ]
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
         print("✅ Core dependencies installed!")
 

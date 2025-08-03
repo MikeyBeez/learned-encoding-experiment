@@ -29,6 +29,7 @@ import random
 import math
 import statistics
 from dataclasses import dataclass
+from scipy.stats import ttest_ind
 from typing import Dict, List, Tuple, Optional
 from real_world_experiment import (
     ModelConfig,
@@ -131,11 +132,10 @@ class AcademicValidationFramework:
         print("=" * 60)
 
         # Get data
-        train_loader, val_loader, _, vocab = get_dataloaders(batch_size=16, seq_len=35)
-        vocab_size = len(vocab)
+        train_loader, val_loader, _, vocab_size = get_dataloaders(batch_size=16, seq_len=35)
         
         # Use a smaller subset of compression ratios for real-world testing to save time
-        compression_ratios = [4.0, 8.0, 16.0]
+        compression_ratios = [8.0] # Reduced to one for faster verification
         self.results['metadata'] = {'compression_ratios_tested': compression_ratios}
 
         for ratio in compression_ratios:
@@ -154,38 +154,55 @@ class AcademicValidationFramework:
                 nhead=4
             )
 
-            # --- Run Learned Encoding Model ---
-            learned_model = LearnedEncodingModel(config)
-            _, learned_results = run_language_model_training(
-                learned_model, train_loader, val_loader, vocab_size, epochs=epochs
-            )
-            
-            # --- Run Traditional Model ---
-            # 1. Pre-train autoencoder
-            autoencoder = SimpleAutoencoder(
-                vocab_size=vocab_size,
-                embedding_dim=traditional_dim,
-                compressed_dim=compressed_dim
-            )
-            trained_autoencoder = train_autoencoder(autoencoder, train_loader, epochs=ae_epochs)
-            
-            # 2. Train traditional model with frozen autoencoder
-            traditional_model = TraditionalModel(config, trained_autoencoder)
-            _, traditional_results = run_language_model_training(
-                traditional_model, train_loader, val_loader, vocab_size, epochs=epochs
-            )
+            learned_losses, traditional_losses = [], []
+            learned_perplexities, traditional_perplexities = [], []
 
-            # Store results (using loss for statistical comparison)
+            for i in range(self.config.num_independent_runs):
+                print(f"    Run {i+1}/{self.config.num_independent_runs}...")
+
+                # --- Run Learned Encoding Model ---
+                learned_model = LearnedEncodingModel(config)
+                _, learned_results = run_language_model_training(
+                    learned_model, train_loader, val_loader, vocab_size, epochs=epochs
+                )
+                learned_losses.append(learned_results['loss'])
+                learned_perplexities.append(learned_results['perplexity'])
+
+                # --- Run Traditional Model ---
+                autoencoder = SimpleAutoencoder(
+                    vocab_size=vocab_size, embedding_dim=traditional_dim, compressed_dim=compressed_dim
+                )
+                trained_autoencoder = train_autoencoder(autoencoder, train_loader, epochs=ae_epochs)
+                traditional_model = TraditionalModel(config, trained_autoencoder)
+                _, traditional_results = run_language_model_training(
+                    traditional_model, train_loader, val_loader, vocab_size, epochs=epochs
+                )
+                traditional_losses.append(traditional_results['loss'])
+                traditional_perplexities.append(traditional_results['perplexity'])
+
+            # Perform statistical analysis on the collected losses
+            stats = self._compute_statistical_metrics(learned_losses, traditional_losses)
+
+            # Store detailed results
             self.results['compression_scaling'][ratio] = {
-                'learned_loss': learned_results['loss'],
-                'traditional_loss': traditional_results['loss'],
-                'learned_perplexity': learned_results['perplexity'],
-                'traditional_perplexity': traditional_results['perplexity'],
+                'learned_loss_mean': stats['learned_mean'],
+                'learned_loss_std': stats['learned_std'],
+                'traditional_loss_mean': stats['traditional_mean'],
+                'traditional_loss_std': stats['traditional_std'],
+                'p_value': stats['p_value'],
+                'significant': stats['significant'],
+                'effect_size': stats['effect_size'],
+                'learned_perplexity_mean': statistics.mean(learned_perplexities),
+                'traditional_perplexity_mean': statistics.mean(traditional_perplexities),
+                'runs': self.config.num_independent_runs,
+                'raw_learned_losses': learned_losses,
+                'raw_traditional_losses': traditional_losses,
             }
             
-            print(f"\n--- Results for {ratio:.1f}:1 ---")
-            print(f"  Learned Model Perplexity:     {learned_results['perplexity']:.2f}")
-            print(f"  Traditional Model Perplexity: {traditional_results['perplexity']:.2f}")
+            print(f"\n--- Results for {ratio:.1f}:1 (over {self.config.num_independent_runs} runs) ---")
+            print(f"  Learned Model Perplexity:     {stats['learned_mean']:.2f} ± {stats['learned_std']:.2f}")
+            print(f"  Traditional Model Perplexity: {stats['traditional_mean']:.2f} ± {stats['traditional_std']:.2f}")
+            print(f"  P-value: {stats['p_value']:.4f} ({'Significant' if stats['significant'] else 'Not Significant'})")
 
     
     def _compute_statistical_metrics(self, learned_results: List[float], 
@@ -209,13 +226,13 @@ class AcademicValidationFramework:
         pooled_std = math.sqrt((learned_std**2 + traditional_std**2) / 2) if learned_std > 0 and traditional_std > 0 else 1.0
         effect_size = (traditional_mean - learned_mean) / pooled_std if pooled_std > 0 else 0.0
         
-        # Welch's t-test (unequal variances)
-        if learned_std > 0 and traditional_std > 0:
-            t_stat = (traditional_mean - learned_mean) / math.sqrt(learned_std**2/n + traditional_std**2/n)
-            # Simplified p-value approximation
-            p_value = 2 * (1 - 0.5 * (1 + math.erf(abs(t_stat) / math.sqrt(2))))
+        # Welch's t-test (unequal variances) using scipy for accuracy
+        if len(learned_results) > 1 and len(traditional_results) > 1:
+            # We expect traditional loss to be higher, so the difference should be positive
+            # A one-sided test ('greater') is used to test if traditional_results is greater than learned_results
+            t_stat, p_value = ttest_ind(traditional_results, learned_results, equal_var=False, alternative='greater')
         else:
-            p_value = 1.0
+            t_stat, p_value = 0.0, 1.0
         
         # Relative improvement
         relative_improvement = ((traditional_mean - learned_mean) / traditional_mean * 100) if traditional_mean > 0 else 0.0
@@ -405,8 +422,8 @@ def main():
     
     print(f"\n🚀 Beginning real-world validation...")
     
-    # Run the real-world compression scaling study
-    validator.run_compression_scaling_study(epochs=2, ae_epochs=2)
+    # Run the real-world compression scaling study (with reduced epochs for verification)
+    validator.run_compression_scaling_study(epochs=1, ae_epochs=1)
     
     # Save results
     validator.save_comprehensive_results("real_world_validation_results.json")

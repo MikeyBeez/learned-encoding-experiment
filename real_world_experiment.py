@@ -18,6 +18,7 @@ import torch.optim as optim
 from collections import Counter, OrderedDict
 import time
 import math
+from transformers import AutoTokenizer
 
 @dataclass
 class ModelConfig:
@@ -149,93 +150,80 @@ from torch.utils.data import Dataset, DataLoader
 
 from datasets import load_dataset
 
-class SimpleTokenizer:
-    """A simple whitespace tokenizer."""
-    def __call__(self, text):
-        # Add a check for None or empty string
-        if not text:
-            return []
-        return text.lower().split()
-
-class Vocab:
-    """A simple vocabulary class, built from an iterator."""
-    def __init__(self, token_iterator, specials=['<unk>', '<pad>', '<bos>', '<eos>'], min_freq=1):
-        self.counter = Counter(token for token in token_iterator)
-        sorted_by_freq_tuples = sorted(self.counter.items(), key=lambda x: x[1], reverse=True)
-        ordered_dict = OrderedDict(sorted_by_freq_tuples)
-        self.specials = specials
-        self.itos = specials[:]
-        for token, freq in ordered_dict.items():
-            if freq >= min_freq:
-                self.itos.append(token)
-        self.stoi = {s: i for i, s in enumerate(self.itos)}
-        self.unk_index = self.stoi['<unk>']
-
-    def __len__(self):
-        return len(self.itos)
-
-    def __getitem__(self, token):
-        return self.stoi.get(token, self.unk_index)
-
 class LanguageModelDataset(Dataset):
-    """PyTorch Dataset for language modeling."""
-    def __init__(self, data, seq_len):
-        self.data = data
-        self.seq_len = seq_len
+    """Custom PyTorch Dataset for language modeling from pre-chunked data."""
+    def __init__(self, split_data):
+        self.split_data = split_data
 
     def __len__(self):
-        return (len(self.data) - 1) // self.seq_len
+        return len(self.split_data)
 
     def __getitem__(self, i):
-        start = i * self.seq_len
-        end = start + self.seq_len
-        if end + 1 > len(self.data):
-            end = len(self.data) - 1
-            start = end - self.seq_len
-        return self.data[start:end], self.data[start+1:end+1]
+        item = self.split_data[i]
+        input_ids = torch.tensor(item['input_ids'], dtype=torch.long)
+        # For language modeling, the input and target are shifted by one token.
+        inputs = input_ids[:-1].clone()
+        targets = input_ids[1:].clone()
+        return inputs, targets
 
 def get_dataloaders(dataset_name='wikitext', config_name='wikitext-2-raw-v1', batch_size=32, seq_len=35):
-    """Returns train, validation, and test dataloaders for a given dataset from Hugging Face."""
-    print(f"Loading {dataset_name} dataset...")
-    dataset = load_dataset(dataset_name, config_name)
+    """Returns train, validation, and test dataloaders using a Hugging Face tokenizer."""
+    print(f"Loading {dataset_name} dataset and tokenizer...")
 
-    tokenizer = SimpleTokenizer()
+    # 1. Load dataset and a pre-trained tokenizer
+    # Using a smaller subset of the data for faster verification runs.
+    from datasets import DatasetDict
+    train_split = load_dataset(dataset_name, config_name, split='train[:10%]')
+    val_split = load_dataset(dataset_name, config_name, split='validation[:10%]')
+    test_split = load_dataset(dataset_name, config_name, split='test')
+    dataset = DatasetDict({
+        'train': train_split,
+        'validation': val_split,
+        'test': test_split
+    })
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
-    def yield_tokens_from_split(data_split):
-        for example in data_split:
-            yield from tokenizer(example['text'])
+    # 2. Pre-tokenize the entire dataset
+    def tokenize_function(examples):
+        texts = [doc for doc in examples["text"] if doc is not None and isinstance(doc, str)]
+        return tokenizer(texts)
 
-    print("Building vocabulary from training data...")
-    vocab = Vocab(yield_tokens_from_split(dataset['train']))
-
-    def tokenize_and_numericalize(example):
-        return {'input_ids': [vocab[token] for token in tokenizer(example['text'])]}
-
-    print("Tokenizing and numericalizing dataset...")
     tokenized_datasets = dataset.map(
-        tokenize_and_numericalize,
-        remove_columns=['text']
+        tokenize_function,
+        batched=True,
+        remove_columns=['text'],
+        desc="Running tokenizer on dataset"
     )
 
-    # Convert to a single flat PyTorch Tensor for each split
-    def flatten_ids(tokenized_split):
-        return [item for sublist in tokenized_split['input_ids'] for item in sublist]
+    # 3. Concatenate tokenized texts and chunk them into blocks of `seq_len`
+    def group_texts(examples):
+        concatenated_examples = {k: sum(examples[k], []) for k in examples.keys()}
+        total_length = len(concatenated_examples[list(examples.keys())[0]])
+        total_length = (total_length // seq_len) * seq_len
+        result = {
+            k: [t[i : i + seq_len] for i in range(0, total_length, seq_len)]
+            for k, t in concatenated_examples.items()
+        }
+        return result
 
-    train_data = torch.tensor(flatten_ids(tokenized_datasets['train']), dtype=torch.long)
-    val_data = torch.tensor(flatten_ids(tokenized_datasets['validation']), dtype=torch.long)
-    test_data = torch.tensor(flatten_ids(tokenized_datasets['test']), dtype=torch.long)
+    lm_datasets = tokenized_datasets.map(
+        group_texts,
+        batched=True,
+        desc=f"Grouping texts into chunks of {seq_len}"
+    )
 
-    # Create Datasets and DataLoaders
-    train_dataset = LanguageModelDataset(train_data, seq_len)
-    val_dataset = LanguageModelDataset(val_data, seq_len)
-    test_dataset = LanguageModelDataset(test_data, seq_len)
+    # 4. Create PyTorch Datasets and DataLoaders
+    train_dataset = LanguageModelDataset(lm_datasets['train'])
+    val_dataset = LanguageModelDataset(lm_datasets['validation'])
+    test_dataset = LanguageModelDataset(lm_datasets['test'])
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-    print("✅ DataLoaders created successfully.")
-    return train_loader, val_loader, test_loader, vocab
+    vocab_size = tokenizer.vocab_size
+    print(f"✅ DataLoaders created successfully with vocab size {vocab_size}.")
+    return train_loader, val_loader, test_loader, vocab_size
 
 def train_autoencoder(autoencoder, train_loader, epochs=5, lr=0.001):
     """Pre-trains the SimpleAutoencoder."""
