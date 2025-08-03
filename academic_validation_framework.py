@@ -1,634 +1,530 @@
 #!/usr/bin/env python3
 """
-Research Validation Framework for Learned Encoding Paper
-Bulletproof testing across multiple critical dimensions
+A research-grade, modular neural network framework for the Learned Encoding Experiment.
 
-This framework ensures our research meets the highest academic standards
-before publication by testing:
-
-1. Compression scaling (2:1 to 50:1 ratios)
-2. Vocabulary scaling (50 to 10,000+ tokens)  
-3. Dataset complexity (patterns to real language)
-4. Architecture robustness (different model sizes)
-5. Statistical significance (multiple runs, confidence intervals)
-6. Baseline comparisons (multiple autoencoder variants)
-7. Theoretical validation (information theory analysis)
-
-Academic Standards Met:
-- Multiple independent runs for statistical significance
-- Confidence intervals and error bars
-- Ablation studies isolating key components
-- Comparison against multiple baselines
-- Replication package for peer review
-- Theoretical grounding with mathematical proofs
+This framework replaces the original, flawed implementation with a correct,
+extensible, and understandable architecture based on modern deep learning principles.
+It features a layer-based design, proper backpropagation, and a clear separation
+of concerns between models, layers, and optimizers.
 """
 
-import json
-import time
 import random
 import math
-import statistics
-from dataclasses import dataclass
-from typing import Dict, List, Tuple, Optional
+from typing import List, Dict, Any
+from dataclasses import dataclass, field
 
-@dataclass
-class ValidationConfig:
-    """Configuration for bulletproof academic validation."""
-    
-    # Core scaling tests
-    compression_ratios: List[float] = None
-    vocabulary_sizes: List[int] = None
-    dataset_complexities: List[str] = None
-    
-    # Statistical rigor
-    num_independent_runs: int = 10  # Statistical significance
-    confidence_level: float = 0.95
-    
-    # Academic comparison baselines
-    baseline_methods: List[str] = None
-    
-    # Architecture ablations
-    model_architectures: List[Dict] = None
-    
-    def __post_init__(self):
-        if self.compression_ratios is None:
-            self.compression_ratios = [2.0, 4.0, 8.0, 16.0, 32.0, 50.0]
-        
-        if self.vocabulary_sizes is None:
-            self.vocabulary_sizes = [50, 100, 500, 1000, 2000, 5000, 10000]
-        
-        if self.dataset_complexities is None:
-            self.dataset_complexities = [
-                'simple_patterns',
-                'complex_patterns', 
-                'structured_sequences',
-                'hierarchical_patterns',
-                'semi_random',
-                'natural_language_simulation'
-            ]
-        
-        if self.baseline_methods is None:
-            self.baseline_methods = [
-                'standard_autoencoder',
-                'deep_autoencoder',
-                'variational_autoencoder',
-                'regularized_autoencoder',
-                'sparse_autoencoder'
-            ]
-        
-        if self.model_architectures is None:
-            self.model_architectures = [
-                {'layers': 1, 'hidden_dim': 16, 'name': 'minimal'},
-                {'layers': 2, 'hidden_dim': 32, 'name': 'standard'},
-                {'layers': 3, 'hidden_dim': 64, 'name': 'deep'},
-                {'layers': 4, 'hidden_dim': 128, 'name': 'very_deep'}
-            ]
+# =============================================================================
+# 1. Core Matrix and Optimizer Classes
+# =============================================================================
 
-class AcademicValidationFramework:
-    """Comprehensive validation framework for academic publication."""
-    
-    def __init__(self, config: ValidationConfig):
-        self.config = config
-        self.results = {
-            'compression_scaling': {},
-            'vocabulary_scaling': {},
-            'complexity_scaling': {},
-            'baseline_comparisons': {},
-            'architecture_ablations': {},
-            'statistical_analysis': {},
-            'theoretical_validation': {},
-            'replication_package': {}
-        }
-        
-        print("🎓 Academic Validation Framework Initialized")
-        print(f"📊 Planned tests: {self._count_total_tests()}")
-        print(f"📈 Statistical rigor: {config.num_independent_runs} runs per test")
-        print(f"🎯 Confidence level: {config.confidence_level}")
-    
-    def _count_total_tests(self) -> int:
-        """Count total number of tests for progress tracking."""
-        total = 0
-        total += len(self.config.compression_ratios)  # Compression scaling
-        total += len(self.config.vocabulary_sizes)    # Vocabulary scaling
-        total += len(self.config.dataset_complexities) # Complexity scaling
-        total += len(self.config.baseline_methods)    # Baseline comparisons
-        total += len(self.config.model_architectures) # Architecture ablations
-        return total * self.config.num_independent_runs
-    
-    def run_compression_scaling_study(self):
-        """Academic-grade compression scaling study."""
-        print("\n📐 Compression Scaling Study")
-        print("Testing hypothesis across compression ratios")
-        print("=" * 50)
-        
-        for compression_ratio in self.config.compression_ratios:
-            print(f"\n🔬 Testing {compression_ratio:.1f}:1 compression")
-            
-            # Run multiple independent experiments
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                # Set unique seed for each run
-                random.seed(42 + run)
-                
-                learned_loss = self._simulate_learned_performance(compression_ratio)
-                traditional_loss = self._simulate_traditional_performance(compression_ratio)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            # Statistical analysis
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            
-            self.results['compression_scaling'][compression_ratio] = stats
-            
-            # Report results with confidence intervals
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Effect size: {stats['effect_size']:.3f}")
-            print(f"  📊 P-value: {stats['p_value']:.6f}")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_vocabulary_scaling_study(self):
-        """Academic-grade vocabulary scaling study."""
-        print("\n📚 Vocabulary Scaling Study") 
-        print("Testing scalability to large vocabularies")
-        print("=" * 50)
-        
-        for vocab_size in self.config.vocabulary_sizes:
-            print(f"\n🔬 Testing {vocab_size:,} token vocabulary")
-            
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                # Vocabulary size affects complexity
-                learned_loss = self._simulate_learned_performance(8.0, vocab_complexity=vocab_size)
-                traditional_loss = self._simulate_traditional_performance(8.0, vocab_complexity=vocab_size)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            self.results['vocabulary_scaling'][vocab_size] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Advantage: {stats['relative_improvement']:.1f}%")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_dataset_complexity_study(self):
-        """Academic-grade dataset complexity study."""
-        print("\n🎯 Dataset Complexity Study")
-        print("Testing robustness across data types")
-        print("=" * 50)
-        
-        for complexity in self.config.dataset_complexities:
-            print(f"\n🔬 Testing {complexity.replace('_', ' ')}")
-            
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                # Complexity affects both methods differently
-                learned_loss = self._simulate_learned_performance(8.0, complexity=complexity)
-                traditional_loss = self._simulate_traditional_performance(8.0, complexity=complexity)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            self.results['complexity_scaling'][complexity] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Robustness: {stats['robustness_score']:.3f}")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_baseline_comparison_study(self):
-        """Academic-grade baseline comparison study."""
-        print("\n🏆 Baseline Comparison Study")
-        print("Testing against multiple autoencoder variants")
-        print("=" * 50)
-        
-        for baseline in self.config.baseline_methods:
-            print(f"\n🔬 Testing vs {baseline.replace('_', ' ')}")
-            
-            learned_results = []
-            baseline_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                learned_loss = self._simulate_learned_performance(8.0)
-                baseline_loss = self._simulate_baseline_performance(8.0, baseline)
-                
-                learned_results.append(learned_loss)
-                baseline_results.append(baseline_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, baseline_results)
-            self.results['baseline_comparisons'][baseline] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 {baseline}: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Improvement: {stats['relative_improvement']:.1f}%")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def run_architecture_ablation_study(self):
-        """Academic-grade architecture ablation study."""
-        print("\n🏗️ Architecture Ablation Study")
-        print("Testing architectural components")
-        print("=" * 50)
-        
-        for architecture in self.config.model_architectures:
-            print(f"\n🔬 Testing {architecture['name']} architecture")
-            print(f"   {architecture['layers']} layers, {architecture['hidden_dim']}D hidden")
-            
-            learned_results = []
-            traditional_results = []
-            
-            for run in range(self.config.num_independent_runs):
-                print(f"  Run {run + 1}/{self.config.num_independent_runs}...", end="")
-                
-                random.seed(42 + run)
-                
-                # Architecture affects model capacity
-                learned_loss = self._simulate_learned_performance(8.0, architecture=architecture)
-                traditional_loss = self._simulate_traditional_performance(8.0, architecture=architecture)
-                
-                learned_results.append(learned_loss)
-                traditional_results.append(traditional_loss)
-                
-                print(" ✓")
-            
-            stats = self._compute_statistical_metrics(learned_results, traditional_results)
-            self.results['architecture_ablations'][architecture['name']] = stats
-            
-            print(f"  📊 Learned: {stats['learned_mean']:.4f} ± {stats['learned_ci']:.4f}")
-            print(f"  📊 Traditional: {stats['traditional_mean']:.4f} ± {stats['traditional_ci']:.4f}")
-            print(f"  📊 Architecture effect: {stats['architecture_benefit']:.3f}")
-            print(f"  🎯 Significant: {'✅' if stats['significant'] else '❌'}")
-    
-    def _simulate_learned_performance(self, compression_ratio: float, 
-                                    vocab_complexity: int = 100,
-                                    complexity: str = 'simple_patterns',
-                                    architecture: Dict = None) -> float:
-        """Simulate learned encoding performance with realistic characteristics."""
-        
-        # Base performance (learned encodings are inherently better due to task alignment)
-        base_loss = 2.5
-        
-        # Compression effect (learned encodings degrade gracefully)
-        compression_penalty = 0.05 * math.log(compression_ratio)
-        
-        # Vocabulary complexity effect (learned encodings scale better)
-        vocab_penalty = 0.0001 * math.log(vocab_complexity)
-        
-        # Dataset complexity effect
-        complexity_penalties = {
-            'simple_patterns': 0.0,
-            'complex_patterns': 0.1,
-            'structured_sequences': 0.15,
-            'hierarchical_patterns': 0.2,
-            'semi_random': 0.4,
-            'natural_language_simulation': 0.6
-        }
-        complexity_penalty = complexity_penalties.get(complexity, 0.0)
-        
-        # Architecture effect
-        arch_benefit = 0.0
-        if architecture:
-            # Larger architectures help, but with diminishing returns
-            arch_benefit = -0.1 * math.log(architecture.get('hidden_dim', 32) / 32)
-        
-        # Add realistic noise
-        noise = random.gauss(0, 0.05)
-        
-        final_loss = base_loss + compression_penalty + vocab_penalty + complexity_penalty + arch_benefit + noise
-        return max(0.5, final_loss)  # Floor to prevent unrealistic values
-    
-    def _simulate_traditional_performance(self, compression_ratio: float,
-                                        vocab_complexity: int = 100,
-                                        complexity: str = 'simple_patterns',
-                                        architecture: Dict = None) -> float:
-        """Simulate traditional autoencoder performance with realistic characteristics."""
-        
-        # Base performance (slightly worse due to reconstruction objective mismatch)
-        base_loss = 2.6
-        
-        # Compression effect (traditional methods degrade faster due to information bottleneck)
-        compression_penalty = 0.08 * math.log(compression_ratio)
-        
-        # Vocabulary complexity effect (traditional methods scale worse)
-        vocab_penalty = 0.0002 * math.log(vocab_complexity)
-        
-        # Dataset complexity effect (traditional methods suffer more on complex data)
-        complexity_penalties = {
-            'simple_patterns': 0.0,
-            'complex_patterns': 0.15,
-            'structured_sequences': 0.25,
-            'hierarchical_patterns': 0.35,
-            'semi_random': 0.6,
-            'natural_language_simulation': 0.9
-        }
-        complexity_penalty = complexity_penalties.get(complexity, 0.0)
-        
-        # Architecture effect (less benefit due to suboptimal pre-training)
-        arch_benefit = 0.0
-        if architecture:
-            arch_benefit = -0.05 * math.log(architecture.get('hidden_dim', 32) / 32)
-        
-        # Add realistic noise
-        noise = random.gauss(0, 0.05)
-        
-        final_loss = base_loss + compression_penalty + vocab_penalty + complexity_penalty + arch_benefit + noise
-        return max(0.5, final_loss)
-    
-    def _simulate_baseline_performance(self, compression_ratio: float, baseline_type: str) -> float:
-        """Simulate different baseline autoencoder variants."""
-        
-        # Different baselines have different characteristics
-        baseline_adjustments = {
-            'standard_autoencoder': 0.0,
-            'deep_autoencoder': -0.1,      # Slightly better capacity
-            'variational_autoencoder': 0.05, # Regularization hurts compression
-            'regularized_autoencoder': 0.03, # Slight regularization penalty
-            'sparse_autoencoder': -0.05     # Sparsity can help
-        }
-        
-        base_performance = self._simulate_traditional_performance(compression_ratio)
-        adjustment = baseline_adjustments.get(baseline_type, 0.0)
-        
-        return base_performance + adjustment + random.gauss(0, 0.03)
-    
-    def _compute_statistical_metrics(self, learned_results: List[float], 
-                                   traditional_results: List[float]) -> Dict:
-        """Compute comprehensive statistical metrics for academic rigor."""
-        
-        # Basic statistics
-        learned_mean = statistics.mean(learned_results)
-        learned_std = statistics.stdev(learned_results) if len(learned_results) > 1 else 0.0
-        traditional_mean = statistics.mean(traditional_results)
-        traditional_std = statistics.stdev(traditional_results) if len(traditional_results) > 1 else 0.0
-        
-        # Confidence intervals (assuming t-distribution)
-        n = len(learned_results)
-        t_critical = 2.262 if n == 10 else 1.96  # Approximate for t(9,0.025) or normal
-        
-        learned_ci = t_critical * learned_std / math.sqrt(n) if learned_std > 0 else 0.0
-        traditional_ci = t_critical * traditional_std / math.sqrt(n) if traditional_std > 0 else 0.0
-        
-        # Effect size (Cohen's d)
-        pooled_std = math.sqrt((learned_std**2 + traditional_std**2) / 2) if learned_std > 0 and traditional_std > 0 else 1.0
-        effect_size = (traditional_mean - learned_mean) / pooled_std if pooled_std > 0 else 0.0
-        
-        # Welch's t-test (unequal variances)
-        if learned_std > 0 and traditional_std > 0:
-            t_stat = (traditional_mean - learned_mean) / math.sqrt(learned_std**2/n + traditional_std**2/n)
-            # Simplified p-value approximation
-            p_value = 2 * (1 - 0.5 * (1 + math.erf(abs(t_stat) / math.sqrt(2))))
-        else:
-            p_value = 1.0
-        
-        # Relative improvement
-        relative_improvement = ((traditional_mean - learned_mean) / traditional_mean * 100) if traditional_mean > 0 else 0.0
-        
-        # Statistical significance
-        significant = p_value < (1 - self.config.confidence_level)
-        
-        # Additional metrics
-        robustness_score = 1.0 / (1.0 + learned_std)  # Lower variance = more robust
-        architecture_benefit = effect_size  # For architecture studies
-        
-        return {
-            'learned_mean': learned_mean,
-            'learned_std': learned_std,
-            'learned_ci': learned_ci,
-            'traditional_mean': traditional_mean,
-            'traditional_std': traditional_std,
-            'traditional_ci': traditional_ci,
-            'effect_size': effect_size,
-            'p_value': p_value,
-            'relative_improvement': relative_improvement,
-            'significant': significant,
-            'robustness_score': robustness_score,
-            'architecture_benefit': architecture_benefit,
-            'sample_size': n
-        }
-    
-    def run_theoretical_validation(self):
-        """Validate theoretical foundations."""
-        print("\n🧮 Theoretical Validation")
-        print("Validating information-theoretic foundations")
-        print("=" * 50)
-        
-        # Information theory analysis
-        theoretical_results = {
-            'mutual_information_preserved': True,
-            'compression_bounds': {
-                'theoretical_limit': 'log2(vocab_size) bits per token',
-                'achieved_compression': '8:1 ratio validated',
-                'information_loss': 'Minimal for task-relevant information'
-            },
-            'convergence_analysis': {
-                'learned_encoding_convergence': 'Faster due to single objective',
-                'autoencoder_convergence': 'Slower due to reconstruction mismatch',
-                'theoretical_justification': 'Joint optimization theorem'
-            },
-            'generalization_bounds': {
-                'rademacher_complexity': 'Bounded by embedding dimension',
-                'pac_bayes_bound': 'Tighter for learned encodings',
-                'stability_analysis': 'More stable than two-stage training'
-            }
-        }
-        
-        self.results['theoretical_validation'] = theoretical_results
-        
-        print("  📐 Information preservation: ✅ Validated")
-        print("  📐 Compression bounds: ✅ Within theoretical limits")
-        print("  📐 Convergence analysis: ✅ Faster convergence proven")
-        print("  📐 Generalization bounds: ✅ Tighter bounds achieved")
-    
-    def generate_comprehensive_report(self):
-        """Generate comprehensive academic report."""
-        print("\n📋 Comprehensive Academic Report")
-        print("=" * 60)
-        
-        # Overall statistics
-        all_results = []
-        for category in ['compression_scaling', 'vocabulary_scaling', 'complexity_scaling', 
-                        'baseline_comparisons', 'architecture_ablations']:
-            for test_name, result in self.results[category].items():
-                if isinstance(result, dict) and 'significant' in result:
-                    all_results.append(result)
-        
-        if all_results:
-            total_tests = len(all_results)
-            significant_tests = sum(1 for r in all_results if r['significant'])
-            success_rate = (significant_tests / total_tests) * 100
-            
-            avg_effect_size = statistics.mean([r['effect_size'] for r in all_results])
-            avg_improvement = statistics.mean([r['relative_improvement'] for r in all_results])
-            
-            print(f"\n📊 Overall Statistical Summary:")
-            print(f"   Total experiments: {total_tests}")
-            print(f"   Statistically significant: {significant_tests}")
-            print(f"   Success rate: {success_rate:.1f}%")
-            print(f"   Average effect size: {avg_effect_size:.3f}")
-            print(f"   Average improvement: {avg_improvement:.1f}%")
-            
-            # Academic assessment
-            if success_rate >= 90 and avg_effect_size >= 0.5:
-                print(f"\n🏆 ACADEMIC ASSESSMENT: BULLETPROOF")
-                print(f"   ✅ Strong statistical evidence across all dimensions")
-                print(f"   ✅ Large effect sizes indicate practical significance")
-                print(f"   ✅ Ready for top-tier academic publication")
-                assessment = "BULLETPROOF"
-            elif success_rate >= 75 and avg_effect_size >= 0.3:
-                print(f"\n🎯 ACADEMIC ASSESSMENT: STRONG")
-                print(f"   ✅ Good statistical evidence with some limitations")
-                print(f"   ✅ Moderate effect sizes indicate real benefits")
-                print(f"   ⚠️  Minor revisions needed for publication")
-                assessment = "STRONG"
-            elif success_rate >= 60:
-                print(f"\n⚠️  ACADEMIC ASSESSMENT: PROMISING")
-                print(f"   ⚠️  Mixed evidence requires deeper investigation")
-                print(f"   ⚠️  Major revisions needed before publication")
-                assessment = "PROMISING"
-            else:
-                print(f"\n❌ ACADEMIC ASSESSMENT: INSUFFICIENT")
-                print(f"   ❌ Insufficient evidence for publication")
-                print(f"   ❌ Fundamental issues need addressing")
-                assessment = "INSUFFICIENT"
-            
-            self.results['statistical_analysis']['overall_assessment'] = assessment
-            self.results['statistical_analysis']['success_rate'] = success_rate
-            self.results['statistical_analysis']['average_effect_size'] = avg_effect_size
-            
-            return assessment
-        
-        return "INCOMPLETE"
-    
-    def create_replication_package(self):
-        """Create complete replication package for peer review."""
-        print("\n📦 Creating Replication Package")
-        print("Ensuring full reproducibility for peer review")
-        print("=" * 50)
-        
-        replication_package = {
-            'code': {
-                'main_experiment': 'pure_python_experiment.py',
-                'validation_framework': 'academic_validation_framework.py',
-                'comprehensive_tests': 'comprehensive_scaling_tests.py',
-                'requirements': 'No external dependencies - pure Python'
-            },
-            'data': {
-                'synthetic_datasets': 'Generated deterministically with fixed seeds',
-                'real_data_examples': 'Available upon request',
-                'preprocessing_scripts': 'Included in main experiment files'
-            },
-            'results': {
-                'all_experimental_data': 'comprehensive_validation_results.json',
-                'statistical_analysis': 'Full statistical metrics with confidence intervals',
-                'figures_and_plots': 'Generated programmatically for reproducibility'
-            },
-            'documentation': {
-                'theoretical_foundations': 'README.md sections 4-5',
-                'experimental_protocol': 'Detailed in validation framework',
-                'hyperparameter_choices': 'Justified in code comments',
-                'baseline_implementations': 'Multiple autoencoder variants included'
-            },
-            'reproducibility': {
-                'random_seeds': 'Fixed for all experiments',
-                'environment': 'Pure Python 3.7+ - no version dependencies',
-                'runtime': 'Approximately 10-15 minutes on standard hardware',
-                'verification': 'Expected output ranges provided'
-            }
-        }
-        
-        self.results['replication_package'] = replication_package
-        
-        print("  📝 Code package: ✅ Complete")
-        print("  📊 Data package: ✅ Reproducible")
-        print("  📋 Documentation: ✅ Comprehensive")
-        print("  🔍 Verification: ✅ Deterministic")
-    
-    def save_comprehensive_results(self, filename: str = "comprehensive_validation_results.json"):
-        """Save all validation results for academic use."""
-        with open(filename, 'w') as f:
-            json.dump(self.results, f, indent=2)
-        
-        print(f"\n💾 Comprehensive validation results saved to {filename}")
-        print("📋 Ready for academic submission and peer review")
+class Matrix:
+    """A simple matrix class that supports data and gradient storage."""
+    def __init__(self, rows: int, cols: int):
+        self.rows = rows
+        self.cols = cols
+        # Use Xavier/Glorot initialization for better weight stability
+        limit = math.sqrt(6.0 / (rows + cols))
+        self.data = [[random.uniform(-limit, limit) for _ in range(cols)] for _ in range(rows)]
+        self.grad = [[0.0 for _ in range(cols)] for _ in range(rows)]
+
+    def __repr__(self):
+        return f"Matrix(rows={self.rows}, cols={self.cols})"
+
+    def zero_grad(self):
+        """Resets the gradients to zero."""
+        self.grad = [[0.0 for _ in range(self.cols)] for _ in range(self.rows)]
+
+class SGD:
+    """A simple Stochastic Gradient Descent optimizer."""
+    def __init__(self, params: List[Matrix], lr: float = 0.01):
+        self.params = params
+        self.lr = lr
+
+    def step(self):
+        """Updates parameters using their stored gradients."""
+        for param in self.params:
+            for i in range(param.rows):
+                for j in range(param.cols):
+                    param.data[i][j] -= self.lr * param.grad[i][j]
+
+    def zero_grad(self):
+        """Resets gradients for all managed parameters."""
+        for param in self.params:
+            param.zero_grad()
+
+# =============================================================================
+# 2. Modular Layer-Based Architecture
+# =============================================================================
+
+class Layer:
+    """Abstract base class for a neural network layer."""
+    def forward(self, inputs: Any) -> Any:
+        raise NotImplementedError
+
+    def backward(self, grad_outputs: Any) -> Any:
+        raise NotImplementedError
+
+    def get_params(self) -> List[Matrix]:
+        """Returns the trainable parameters of the layer."""
+        return []
+
+    @property
+    def output_dim(self) -> int:
+        """Returns the output dimension of the layer."""
+        raise NotImplementedError
+
+class EmbeddingLayer(Layer):
+    """
+    An embedding layer that maps token IDs to dense vectors.
+    This is the core component of the experiment.
+    """
+    def __init__(self, vocab_size: int, embed_dim: int):
+        self.vocab_size = vocab_size
+        self.embed_dim = embed_dim
+        self.embeddings = Matrix(vocab_size, embed_dim)
+        self.inputs = None
+
+    @property
+    def output_dim(self) -> int:
+        return self.embed_dim
+
+    def forward(self, inputs: List[int]) -> List[List[float]]:
+        """Maps a list of token IDs to a list of embedding vectors."""
+        self.inputs = inputs
+        return [self.embeddings.data[token_id] for token_id in inputs]
+
+    def backward(self, grad_outputs: List[List[float]]):
+        """
+        Calculates gradients for the embedding matrix.
+        The gradient for a specific token's embedding is the sum of all
+        gradients that flowed back to it.
+        """
+        # No gradient flows "back" from an embedding layer.
+        # It's the start of the chain for this experiment's purpose.
+        for i, token_id in enumerate(self.inputs):
+            for j in range(self.embed_dim):
+                self.embeddings.grad[token_id][j] += grad_outputs[i][j]
+        return None
+
+    def get_params(self) -> List[Matrix]:
+        return [self.embeddings]
+
+class LinearLayer(Layer):
+    """A standard linear transformation layer (fully connected)."""
+    def __init__(self, input_dim: int, output_dim: int):
+        self.weights = Matrix(input_dim, output_dim)
+        self.biases = Matrix(1, output_dim)
+        self.inputs = None
+
+    @property
+    def output_dim(self) -> int:
+        return self.weights.cols
+
+    def forward(self, inputs: List[List[float]]) -> List[List[float]]:
+        """Performs the forward pass: output = input @ weights + biases."""
+        self.inputs = inputs
+        batch_size = len(inputs)
+        outputs = [[0.0] * self.weights.cols for _ in range(batch_size)]
+        for i in range(batch_size):
+            for j in range(self.weights.cols):
+                dot_product = 0.0
+                for k in range(self.weights.rows):
+                    dot_product += inputs[i][k] * self.weights.data[k][j]
+                outputs[i][j] = dot_product + self.biases.data[0][j]
+        return outputs
+
+    def backward(self, grad_outputs: List[List[float]]):
+        """Performs the backward pass to compute gradients."""
+        batch_size = len(self.inputs)
+        grad_inputs = [[0.0] * self.weights.rows for _ in range(batch_size)]
+
+        # Calculate gradients for weights, biases, and inputs
+        for i in range(batch_size):
+            for j in range(self.weights.cols):
+                grad_output_val = grad_outputs[i][j]
+                # Gradient for bias
+                self.biases.grad[0][j] += grad_output_val
+                for k in range(self.weights.rows):
+                    # Gradient for weight
+                    self.weights.grad[k][j] += self.inputs[i][k] * grad_output_val
+                    # Gradient for input to this layer
+                    grad_inputs[i][k] += self.weights.data[k][j] * grad_output_val
+        return grad_inputs
+
+    def get_params(self) -> List[Matrix]:
+        return [self.weights, self.biases]
+
+class ReLULayer(Layer):
+    """A Rectified Linear Unit (ReLU) activation layer."""
+    def __init__(self):
+        self.inputs = None
+        self._output_dim = 0
+
+    @property
+    def output_dim(self) -> int:
+        return self._output_dim
+
+    def forward(self, inputs: List[List[float]]) -> List[List[float]]:
+        """Applies the ReLU function element-wise."""
+        self.inputs = inputs
+        if inputs:
+            self._output_dim = len(inputs[0])
+        return [[max(0.0, x) for x in row] for row in inputs]
+
+    def backward(self, grad_outputs: List[List[float]]):
+        """Computes the gradient through the ReLU activation."""
+        grad_inputs = [[0.0] * len(row) for row in self.inputs]
+        for i in range(len(self.inputs)):
+            for j in range(len(self.inputs[i])):
+                # Gradient is 1 if input was > 0, else 0
+                if self.inputs[i][j] > 0:
+                    grad_inputs[i][j] = grad_outputs[i][j]
+        return grad_inputs
+
+# =============================================================================
+# 3. Model and Loss Function Classes
+# =============================================================================
+
+class Sequential(Layer):
+    """A container for a sequence of layers."""
+    def __init__(self, layers: List[Layer]):
+        self.layers = layers
+
+    def forward(self, inputs: Any) -> Any:
+        """Performs a forward pass through all layers in sequence."""
+        for layer in self.layers:
+            inputs = layer.forward(inputs)
+        return inputs
+
+    def backward(self, grad_outputs: Any):
+        """Performs a backward pass through all layers in reverse."""
+        for layer in reversed(self.layers):
+            grad_outputs = layer.backward(grad_outputs)
+        return grad_outputs
+
+    def get_params(self) -> List[Matrix]:
+        """Gathers parameters from all contained layers."""
+        params = []
+        for layer in self.layers:
+            params.extend(layer.get_params())
+        return params
+
+class CrossEntropyLoss:
+    """
+    Computes the cross-entropy loss and its gradient.
+    This implementation combines softmax and negative log likelihood.
+    """
+    def __init__(self):
+        self.logits = None
+        self.targets = None
+
+    def forward(self, logits: List[List[float]], targets: List[int]) -> float:
+        """Calculates the average cross-entropy loss."""
+        self.logits = logits
+        self.targets = targets
+        batch_size = len(logits)
+        total_loss = 0.0
+
+        for i in range(batch_size):
+            # Softmax calculation
+            row_logits = logits[i]
+            max_logit = max(row_logits)
+            exp_logits = [math.exp(l - max_logit) for l in row_logits]
+            sum_exp_logits = sum(exp_logits)
+            probs = [e / sum_exp_logits for e in exp_logits]
+
+            # Negative log likelihood
+            target_prob = probs[targets[i]]
+            total_loss += -math.log(target_prob + 1e-9) # Add epsilon for stability
+
+        return total_loss / batch_size
+
+    def backward(self) -> List[List[float]]:
+        """Computes the gradient of the loss with respect to the logits."""
+        batch_size = len(self.logits)
+        vocab_size = len(self.logits[0])
+        grad_logits = [[0.0] * vocab_size for _ in range(batch_size)]
+
+        for i in range(batch_size):
+            # Softmax calculation (same as forward)
+            row_logits = self.logits[i]
+            max_logit = max(row_logits)
+            exp_logits = [math.exp(l - max_logit) for l in row_logits]
+            sum_exp_logits = sum(exp_logits)
+            probs = [e / sum_exp_logits for e in exp_logits]
+
+            # Gradient calculation (y_hat - y)
+            for j in range(vocab_size):
+                indicator = 1.0 if j == self.targets[i] else 0.0
+                grad_logits[i][j] = (probs[j] - indicator) / batch_size
+
+        return grad_logits
+
+class MSELoss:
+    """
+    Computes the Mean Squared Error loss and its gradient.
+    Used for the autoencoder's reconstruction task.
+    """
+    def __init__(self):
+        self.predictions = None
+        self.targets = None
+
+    def forward(self, predictions: List[List[float]], targets: List[List[float]]) -> float:
+        """Calculates the average Mean Squared Error."""
+        self.predictions = predictions
+        self.targets = targets
+        batch_size = len(predictions)
+        num_dims = len(predictions[0])
+        total_error = 0.0
+
+        for i in range(batch_size):
+            for j in range(num_dims):
+                error = predictions[i][j] - targets[i][j]
+                total_error += error * error
+
+        return total_error / (batch_size * num_dims)
+
+    def backward(self) -> List[List[float]]:
+        """Computes the gradient of the MSE loss."""
+        batch_size = len(self.predictions)
+        num_dims = len(self.predictions[0])
+
+        grad_inputs = [[0.0] * num_dims for _ in range(batch_size)]
+
+        for i in range(batch_size):
+            for j in range(num_dims):
+                error = self.predictions[i][j] - self.targets[i][j]
+                grad_inputs[i][j] = 2 * error / (batch_size * num_dims)
+
+        return grad_inputs
+
+# =============================================================================
+# 4. Model Architectures
+# =============================================================================
+
+def build_autoencoder(input_dim: int, compressed_dim: int) -> Sequential:
+    """Factory function to build a simple autoencoder model."""
+    return Sequential([
+        LinearLayer(input_dim, compressed_dim),
+        ReLULayer(),
+        LinearLayer(compressed_dim, input_dim)
+    ])
+
+class PretrainedEncoderLayer(Layer):
+    """A layer that uses a pretrained, frozen encoder."""
+    def __init__(self, full_embeddings: Matrix, encoder: Layer):
+        self.full_embeddings = full_embeddings
+        self.encoder = encoder
+        self.inputs = None
+
+    @property
+    def output_dim(self) -> int:
+        # The output dimension is the output dimension of the encoder itself.
+        return self.encoder.output_dim
+
+    def forward(self, inputs: List[int]) -> List[List[float]]:
+        """
+        Takes token IDs, gets their full embeddings, then encodes them.
+        The encoder is a LinearLayer, so its forward method expects a list of lists.
+        """
+        self.inputs = inputs
+        # 1. Get the high-dimensional embeddings for the input tokens
+        original_embeds = [self.full_embeddings.data[token_id] for token_id in inputs]
+        # 2. Pass these embeddings through the pretrained encoder
+        compressed_embeds = self.encoder.forward(original_embeds)
+        return compressed_embeds
+
+    def backward(self, grad_outputs: Any):
+        # Gradients are not propagated back through the frozen encoder or original embeddings.
+        # This layer is a starting point for the downstream model.
+        return None
+
+    def get_params(self) -> List[Matrix]:
+        # This layer has no trainable parameters.
+        return []
+
+def build_downstream_model(embedding_layer: Layer, hidden_dim: int, vocab_size: int) -> Sequential:
+    """
+    Factory function to build the downstream model for next-token prediction.
+    It accepts an embedding layer as a parameter to facilitate both the
+    'learned' and 'traditional' experimental setups with the exact same
+    downstream architecture, ensuring a fair and rigorous comparison.
+    """
+    embed_dim = embedding_layer.output_dim
+    return Sequential([
+        embedding_layer,
+        LinearLayer(embed_dim, hidden_dim),
+        ReLULayer(),
+        LinearLayer(hidden_dim, vocab_size)
+    ])
 
 def main():
-    """Run comprehensive academic validation."""
-    print("🎓 Academic Validation Framework for Learned Encoding Research")
-    print("Bulletproof testing for top-tier publication")
-    print("=" * 80)
-    
-    # Configure validation for academic rigor
-    config = ValidationConfig(
-        compression_ratios=[2.0, 4.0, 8.0, 16.0, 32.0],  # Core scaling range
-        vocabulary_sizes=[50, 100, 500, 1000, 5000],      # Practical scaling
-        dataset_complexities=['simple_patterns', 'complex_patterns', 'structured_sequences', 'semi_random'],
-        num_independent_runs=10,  # Strong statistical power
-        confidence_level=0.95     # Standard academic threshold
-    )
-    
-    # Initialize validation framework
-    validator = AcademicValidationFramework(config)
-    
-    print(f"\n🚀 Beginning comprehensive validation...")
-    print(f"⏱️  Estimated time: 5-10 minutes")
-    
-    # Run all validation studies
-    validator.run_compression_scaling_study()
-    validator.run_vocabulary_scaling_study()
-    validator.run_dataset_complexity_study()
-    validator.run_baseline_comparison_study()
-    validator.run_architecture_ablation_study()
-    validator.run_theoretical_validation()
-    
-    # Generate comprehensive analysis
-    assessment = validator.generate_comprehensive_report()
-    
-    # Create replication package
-    validator.create_replication_package()
-    
-    # Save results
-    validator.save_comprehensive_results()
-    
-    print(f"\n🏁 Academic Validation Complete!")
-    print(f"🎯 Assessment: {assessment}")
-    
-    if assessment in ["BULLETPROOF", "STRONG"]:
-        print(f"📄 STATUS: Ready for academic publication!")
-        print(f"🎪 Next steps: Write paper, submit to venue")
-    else:
-        print(f"🔧 STATUS: Needs refinement before publication")
-        print(f"📋 Focus areas identified in comprehensive report")
+    print("Academic Validation Framework: All components are ready.")
+    print("This file provides a complete, research-grade toolkit for building and training models.")
+    print("Next steps: Implement the ExperimentRunner to conduct the validation study.")
+
+# =============================================================================
+# 5. Rigorous Experiment Runner
+# =============================================================================
+
+@dataclass
+class ExperimentConfig:
+    """Configuration for the validation experiment."""
+    vocab_size: int = 20
+    traditional_dim: int = 32
+    hidden_dim: int = 32
+    seq_len: int = 8
+    num_sequences: int = 200
+    epochs: int = 25
+    autoencoder_epochs: int = 15
+    learning_rate: float = 0.1
+    num_runs: int = 5 # Reduced for speed in typical runs
+    # Parametric sweep configuration
+    learned_dims: List[int] = field(default_factory=lambda: [4, 8, 16])
+
+class ExperimentRunner:
+    """
+    Manages the full, rigorous experiment comparing learned vs. traditional embeddings.
+    """
+    def __init__(self, config: ExperimentConfig):
+        self.config = config
+        self.training_data = self._generate_training_data()
+        # Create a set of high-dimensional "ground truth" embeddings to be compressed
+        self.ground_truth_embeddings = Matrix(config.vocab_size, config.traditional_dim)
+
+    def _generate_training_data(self) -> List[Dict[str, List[int]]]:
+        """Generates synthetic, pattern-based training data."""
+        patterns = [
+            [1, 2, 3, 4, 5] * 3, [7, 8, 9] * 4,
+            [11, 12, 13, 14] * 3, [16, 17] * 6,
+        ]
+        sequences = []
+        for _ in range(self.config.num_sequences):
+            pattern = random.choice(patterns)
+            start_idx = random.randint(0, max(0, len(pattern) - self.config.seq_len))
+            sequence = pattern[start_idx : start_idx + self.config.seq_len]
+            while len(sequence) < self.config.seq_len:
+                sequence.extend(pattern)
+            sequence = sequence[:self.config.seq_len]
+            sequences.append({
+                "inputs": sequence[:-1],
+                "targets": sequence[1:]
+            })
+        return sequences
+
+    def _train_autoencoder(self, learned_dim: int) -> Layer:
+        """
+        Phase 1: Train an autoencoder to compress the ground truth embeddings.
+        Returns the trained encoder layer.
+        """
+        print(f"  Training autoencoder ({self.config.traditional_dim}D -> {learned_dim}D)...")
+        autoencoder = build_autoencoder(self.config.traditional_dim, learned_dim)
+        optimizer = SGD(autoencoder.get_params(), lr=self.config.learning_rate)
+        loss_fn = MSELoss()
+
+        all_embeddings = self.ground_truth_embeddings.data
+
+        for epoch in range(self.config.autoencoder_epochs):
+            optimizer.zero_grad()
+            reconstructed = autoencoder.forward(all_embeddings)
+            loss = loss_fn.forward(reconstructed, all_embeddings)
+            grad = loss_fn.backward()
+            autoencoder.backward(grad)
+            optimizer.step()
+
+        print("  Autoencoder training complete.")
+        return autoencoder.layers[0]
+
+    def _run_single_comparative_trial(self, learned_dim: int, pretrained_encoder: Layer) -> Dict[str, float]:
+        """Phase 2: Run one trial of the learned vs. traditional comparison."""
+        loss_fn = CrossEntropyLoss()
+
+        # 1. Learned Encoding Model
+        learned_embedding_layer = EmbeddingLayer(self.config.vocab_size, learned_dim)
+        learned_model = build_downstream_model(learned_embedding_layer, self.config.hidden_dim, self.config.vocab_size)
+        learned_optimizer = SGD(learned_model.get_params(), lr=self.config.learning_rate)
+
+        # 2. Traditional Model
+        traditional_embedding_layer = PretrainedEncoderLayer(self.ground_truth_embeddings, pretrained_encoder)
+        traditional_model = build_downstream_model(traditional_embedding_layer, self.config.hidden_dim, self.config.vocab_size)
+        traditional_params = [p for p in traditional_model.get_params() if p not in traditional_embedding_layer.get_params()]
+        traditional_optimizer = SGD(traditional_params, lr=self.config.learning_rate)
+
+        # 3. Naive Baseline Model
+        naive_embedding_layer = EmbeddingLayer(self.config.vocab_size, learned_dim)
+        naive_model = build_downstream_model(naive_embedding_layer, self.config.hidden_dim, self.config.vocab_size)
+        naive_params = [p for p in naive_model.get_params() if p not in naive_embedding_layer.get_params()]
+        naive_optimizer = SGD(naive_params, lr=self.config.learning_rate)
+
+        # Training loop
+        for _ in range(self.config.epochs):
+            for batch in self.training_data:
+                # Train all three models
+                for model, optimizer in [(learned_model, learned_optimizer), (traditional_model, traditional_optimizer), (naive_model, naive_optimizer)]:
+                    optimizer.zero_grad()
+                    logits = model.forward(batch["inputs"])
+                    loss = loss_fn.forward(logits, batch["targets"])
+                    grad = loss_fn.backward()
+                    model.backward(grad)
+                    optimizer.step()
+
+        # Evaluate final losses
+        final_losses = {}
+        for name, model in [("learned", learned_model), ("traditional", traditional_model), ("naive", naive_model)]:
+            loss = sum(loss_fn.forward(model.forward(b["inputs"]), b["targets"]) for b in self.training_data) / len(self.training_data)
+            final_losses[name] = loss
+
+        return final_losses
+
+    def run_full_experiment(self) -> Dict[str, Any]:
+        """
+        Runs the entire multi-run, multi-parameter experiment.
+        """
+        full_results = {"config": self.config.__dict__, "results_by_ratio": {}}
+
+        for learned_dim in self.config.learned_dims:
+            compression_ratio = self.config.traditional_dim / learned_dim
+            print(f"🚀 Starting experiment for compression ratio: {compression_ratio:.1f}:1 ({learned_dim}D)")
+            
+            run_losses = {"learned": [], "traditional": [], "naive": []}
+
+            for i in range(self.config.num_runs):
+                print(f"\n--- Run {i+1}/{self.config.num_runs} for {learned_dim}D ---")
+                random.seed(42 + i)
+
+                encoder = self._train_autoencoder(learned_dim)
+
+                print("  Running comparative trial...")
+                final_losses = self._run_single_comparative_trial(learned_dim, encoder)
+                run_losses["learned"].append(final_losses["learned"])
+                run_losses["traditional"].append(final_losses["traditional"])
+                run_losses["naive"].append(final_losses["naive"])
+                print(f"  Trial complete. Losses -> "
+                      f"Learned: {final_losses['learned']:.4f}, "
+                      f"Traditional: {final_losses['traditional']:.4f}, "
+                      f"Naive: {final_losses['naive']:.4f}")
+
+            # Calculate statistics for this compression ratio
+            def get_stats(data: List[float]) -> Dict[str, float]:
+                mean = sum(data) / len(data)
+                std_dev = math.sqrt(sum((x - mean) ** 2 for x in data) / (len(data) - 1)) if len(data) > 1 else 0.0
+                return {"mean_loss": mean, "std_dev": std_dev}
+
+            full_results["results_by_ratio"][f"{compression_ratio:.0f}:1"] = {
+                "learned_model": get_stats(run_losses["learned"]),
+                "traditional_model": get_stats(run_losses["traditional"]),
+                "naive_model": get_stats(run_losses["naive"])
+            }
+        
+        print("\n🏁 Experiment Complete")
+        return full_results
 
 if __name__ == "__main__":
-    main()
+    config = ExperimentConfig()
+    runner = ExperimentRunner(config)
+    results = runner.run_full_experiment()
+
+    # Basic print of final results
+    import json
+    print("\n--- Final Results Summary ---")
+    print(json.dumps(results, indent=2))
