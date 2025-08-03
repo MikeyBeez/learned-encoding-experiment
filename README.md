@@ -37,16 +37,23 @@ Traditional approaches use autoencoders to compress embeddings in a separate tra
     git clone https://github.com/MikeyBeez/learned-encoding-experiment.git
     cd learned-encoding-experiment
 
-    # Install dependencies (PyTorch, Hugging Face datasets, etc.)
+    # Install dependencies (PyTorch, PyQt6, scikit-learn, etc.)
     python3 run_test.py
     ```
 
-2.  **Run the Real-World Validation:**
+2.  **Launch the Unified Experimentation Framework:**
     ```bash
-    # Run the compression scaling study on the WikiText-2 dataset
+    # Run the interactive GUI
+    python3 main_gui.py
+    ```
+    From the GUI, you can tune hyperparameters, run comparisons, and visualize results.
+
+3.  **Run the Full Academic Validation (Optional):**
+    ```bash
+    # Run the complete compression scaling study on the WikiText-2 dataset
     python3 academic_validation_framework.py
     ```
-    This will train both the learned and traditional models across several compression ratios and save the results to `real_world_validation_results.json`.
+    This will train models across several compression ratios and save the results to `real_world_validation_results.json`.
 
 ## 🔬 Experimental Validation
 
@@ -145,19 +152,32 @@ learned-encoding-experiment/
 ...
 ```
 
-## 🚀 Next Steps
+## 🎯 Strategic Research Agenda: From Insight to Impact
 
-### Immediate Extensions
-1. **Scale to larger vocabularies** (1K, 10K, 50K tokens)
-2. **Test with real data** (Wikipedia, genomic sequences, code)
-3. **Push compression limits** (16:1, 32:1 ratios)
-4. **Proper gradient computation** (replace approximation)
+This project has moved beyond simple validation to a new, more ambitious strategic agenda. Our goal is not just to prove *that* learned encodings work, but to discover *when* and *why* they are most advantageous, and then leverage that insight into a high-impact demonstration.
 
-### Research Applications
-1. **Genomic AI**: Full human genome processing
-2. **Scientific literature**: Complete paper analysis
-3. **Code understanding**: Entire codebase comprehension
-4. **Conversational AI**: Unlimited memory context
+Our strategy follows three phases:
+
+### Phase 1: Framework Development (✅ Complete)
+We have built a **Unified Interactive Experimentation Framework** (`main_gui.py`). This tool is the cornerstone of our research, enabling rapid, iterative experiments with real-time visualization. It allows us to:
+- Interactively tune hyperparameters and see their effect.
+- Directly compare the learned and traditional models side-by-side.
+- Visualize high-dimensional embedding spaces using t-SNE to understand their structure.
+- Analyze model similarity with Canonical Correlation Analysis (CCA).
+
+### Phase 2: Insight Discovery (Current Focus)
+Using our new framework, we are now focused on answering the critical question: **"Under what conditions are learned encodings most powerful?"** We will systematically explore variables such as:
+- **Data Modality**: Is the advantage greater for natural language, source code, or biological sequences?
+- **Compression Ratio**: Does the benefit increase or decrease at extreme compression ratios (e.g., 32:1, 64:1)?
+- **Task Complexity**: Are learned encodings more effective for simple predictive tasks or complex, hierarchical ones?
+
+### Phase 3: High-Impact Demonstration
+Once we have identified a scenario where learned encodings provide a decisive, game-changing advantage, we will pivot to creating a **compelling, real-world demonstration**. The goal is to build a practical tool or application that would be infeasible or inefficient without our approach. Potential candidates include:
+- A genomic analysis tool that can process entire chromosomes in memory.
+- A code assistant that can hold the context of a massive codebase.
+- A scientific literature tool that can analyze thousands of papers at once.
+
+This agenda transforms our project from a research experiment into a mission-driven effort to unlock the next generation of efficient, large-scale AI.
 
 ## 📊 Citation
 
