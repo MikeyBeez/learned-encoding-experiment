@@ -1,59 +1,58 @@
 #!/usr/bin/env python3
 """
-Quick test run of the learned encoding experiment
+Quick test run of the enhanced learned encoding experiment.
+This script serves as the main entry point for testing the new, rigorous framework.
 """
 
-import sys
 import subprocess
+import sys
 
 def main():
-    """Run the experiment with dependencies check."""
-    print("🔬 Learned Encoding Experiment - Quick Test")
-    print("=" * 50)
+    """
+    Run the enhanced experiment.
+    Note: The new framework is pure Python and has no external dependencies.
+    """
+    print("🔬 Kicking off the Enhanced Learned Encoding Experiment Test Run 🔬")
+    print("=" * 60)
     
-    # Check if we have required packages
-    try:
-        import numpy as np
-        import matplotlib.pyplot as plt
-        print("✅ Dependencies found: numpy, matplotlib")
-    except ImportError as e:
-        print(f"❌ Missing dependency: {e}")
-        print("Installing required packages...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "matplotlib"])
-        print("✅ Dependencies installed!")
+    script_to_run = "run_enhanced_experiment.py"
+
+    print(f"✅ All components are pure Python. No dependencies needed.")
+    print(f"▶️  Executing `{script_to_run}`...")
+    print("=" * 60)
     
-    # Run the main experiment
     try:
-        from learned_encoding_experiment import main as run_experiment
-        run_experiment()
+        # We use subprocess to ensure it runs in a clean environment as a user would run it.
+        # Using sys.executable ensures we use the same python interpreter.
+        process = subprocess.run(
+            [sys.executable, script_to_run],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        # Print the output from the script, which includes the generated report.
+        print(process.stdout)
+        
+        if process.stderr:
+            print("\n--- Stderr ---")
+            print(process.stderr)
+
+        print("\n✅ Test run completed successfully!")
+
+    except FileNotFoundError:
+        print(f"❌ Error: The script `{script_to_run}` was not found.")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error: The script `{script_to_run}` failed with exit code {e.returncode}.")
+        print("\n--- Stdout ---")
+        print(e.stdout)
+        print("\n--- Stderr ---")
+        print(e.stderr)
+        sys.exit(1)
     except Exception as e:
-        print(f"❌ Error running experiment: {e}")
-        print("Running simplified version...")
-        
-        # Simplified test
-        import numpy as np
-        print("\n🧪 Simplified Test:")
-        print("Testing token encoder learning...")
-        
-        # Simple validation that our approach works
-        vocab_size = 10
-        traditional_dim = 32
-        learned_dim = 4  # 8:1 compression
-        
-        # Traditional approach - autoencoder embeddings
-        autoencoder_embeddings = np.random.normal(0, 0.1, (vocab_size, traditional_dim))
-        compressed_autoencoder = autoencoder_embeddings @ np.random.normal(0, 0.1, (traditional_dim, learned_dim))
-        
-        # Learned approach - direct token encodings
-        learned_encodings = np.random.normal(0, 0.1, (vocab_size, learned_dim))
-        
-        print(f"Traditional embeddings: {traditional_dim}D")
-        print(f"Learned embeddings: {learned_dim}D") 
-        print(f"Compression ratio: {traditional_dim/learned_dim}:1")
-        print(f"Memory savings: {(1 - learned_dim/traditional_dim)*100:.1f}%")
-        
-        print("\n✅ Basic architecture validation complete!")
-        print("💡 Run the full experiment with: python learned_encoding_experiment.py")
+        print(f"❌ An unexpected error occurred: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

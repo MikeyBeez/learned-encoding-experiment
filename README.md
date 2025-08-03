@@ -36,17 +36,14 @@ Traditional approaches use autoencoders to compress embeddings in a separate tra
 git clone https://github.com/MikeyBeez/learned-encoding-experiment.git
 cd learned-encoding-experiment
 
-# Run the experiment (no dependencies required!)
-python3 pure_python_experiment.py
+# Run the enhanced, rigorous experiment (no dependencies required!)
+python3 run_enhanced_experiment.py
 ```
 
 **Expected output:**
-```
-🎯 Experiment Result:
-✅ SUCCESS: Learned encoding performs as well as traditional approach!
-✅ Achieved 8.0:1 compression with maintained performance
-✅ Validates hypothesis: Signal emerges from token relationships
-```
+A detailed report will be printed to the console, summarizing the experimental setup, results across different compression ratios, key findings, and the extrapolated impact on large-scale models.
+
+> **Note on Rigor:** The original proof-of-concept has been replaced with a research-grade framework that uses proper backpropagation, statistical validation over multiple runs, and parametric sweeps.
 
 ## 📊 Architecture Comparison
 
@@ -138,13 +135,13 @@ loss = -log P(next_token | learned_encodings(context))  # Single objective!
 
 ```
 learned-encoding-experiment/
-├── pure_python_experiment.py      # Main validated experiment (no dependencies)
-├── learned_encoding_experiment.py # Advanced version w/ visualization  
-├── run_test.py                     # Quick test runner
+├── run_enhanced_experiment.py      # Main entry point for the new, rigorous experiment
+├── academic_validation_framework.py# The research-grade experiment implementation
+├── reporting.py                    # Module for auto-generating the results report
+├── run_test.py                     # Quick test runner for the enhanced experiment
 ├── README.md                       # This file
-├── CONTRIBUTING.md                 # Research extensions guide
-├── experiment_results.json        # Detailed experimental data
-└── LICENSE                         # MIT License
+├── ...
+└── enhanced_experiment_results.json # Detailed results from the new experiment
 ```
 
 ## 🚀 Next Steps
