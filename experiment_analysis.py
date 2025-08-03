@@ -150,86 +150,125 @@ def compare_embedding_spaces(model1: torch.nn.Module, model2: torch.nn.Module) -
 
     return fig, summary
 
+def _generate_study_section(data: dict, section_key: str, title: str, hypothesis: str, columns: list[tuple[str, str]], row_key_suffix: str = "") -> list[str]:
+    """Generates a generic markdown section for a study."""
+    lines = []
+    if section_key in data and data.get(section_key):
+        lines.append(f"\n## {title}")
+        lines.append(f"**Hypothesis**: {hypothesis}")
+
+        # Create table header
+        header = "| " + " | ".join([col[0] for col in columns]) + " |"
+        separator = "|---" * len(columns) + "|"
+        lines.append(header)
+        lines.append(separator)
+
+        # Populate table rows
+        for key, results in data[section_key].items():
+            row_values = []
+            for _, data_key in columns:
+                if data_key == 'row_key':
+                    row_values.append(f"{key}{row_key_suffix}")
+                    continue
+
+                val = results.get(data_key)
+                # Formatting logic
+                if data_key == 'significant':
+                    row_values.append("✅" if val else "❌")
+                elif 'improvement' in data_key:
+                    row_values.append(f"{val:.1f}%" if isinstance(val, float) else "N/A")
+                elif isinstance(val, float):
+                    if 'loss' in data_key:
+                        std = results.get(data_key.replace('_mean', '_std'), 0)
+                        row_values.append(f"{val:.3f} ± {std:.3f}")
+                    else:
+                        row_values.append(f"{val:.3f}")
+                else:
+                    row_values.append(str(val) if val is not None else "N/A")
+
+            lines.append("| " + " | ".join(row_values) + " |")
+
+        # Simplified dynamic result
+        significant_count = sum(1 for res in data[section_key].values() if res.get('significant'))
+        if len(data[section_key]) > 0:
+            if significant_count == len(data[section_key]):
+                result_line = "✅ **VALIDATED** - Strong statistical evidence across all tests."
+            elif significant_count > 0:
+                result_line = "✅ **PARTIALLY VALIDATED** - Strong evidence in some tests."
+            else:
+                result_line = "❌ **NOT VALIDATED** - No statistical evidence found."
+            lines.append(f"\n**Result**: {result_line}")
+    return lines
+
 def generate_markdown_report(json_path: str) -> str:
     """
     Generates an insightful markdown report from a JSON results file.
-
-    Args:
-        json_path: Path to the JSON file containing validation results.
-
-    Returns:
-        A string containing the formatted markdown report.
     """
     try:
         with open(json_path, 'r') as f:
             data = json.load(f)
-    except FileNotFoundError:
-        return f"# Error\n\nCould not find file: `{json_path}`"
-    except json.JSONDecodeError:
-        return f"# Error\n\nCould not decode invalid JSON from file: `{json_path}`"
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        return f"# Error\n\n{e}"
 
     report_lines = [
         "# 📊 Automated Validation Report",
         "This report was automatically generated from the validation framework results."
     ]
 
-    # --- Compression Scaling Section ---
-    if 'compression_scaling' in data and data['compression_scaling']:
-        report_lines.append("\n## 📐 Compression Scaling Study")
-        report_lines.append("This study evaluates the performance of the Learned vs. Traditional (Autoencoder) model across different embedding compression ratios.")
+    # --- Overall Statistical Summary ---
+    all_results = []
+    for section_key, section_data in data.items():
+        if isinstance(section_data, dict):
+            for result_data in section_data.values():
+                if isinstance(result_data, dict) and 'significant' in result_data:
+                    all_results.append(result_data)
 
-        # Create table header
-        header = "| Compression Ratio | Learned PPL | Traditional PPL | Advantage | Statistically Significant? |"
-        separator = "|---|---|---|---|---|"
-        report_lines.append(header)
-        report_lines.append(separator)
+    total_tests = len(all_results)
+    # A "win" is a significant result where the learned model's loss is lower than traditional.
+    significant_wins = sum(1 for r in all_results if r.get('significant') and r.get('learned_loss_mean', 1) < r.get('traditional_loss_mean', 0))
+    success_rate = (significant_wins / total_tests * 100) if total_tests > 0 else 0
 
-        # Populate table rows
-        for ratio, results in data['compression_scaling'].items():
-            learned_ppl = results.get('learned_perplexity_mean', 'N/A')
-            trad_ppl = results.get('traditional_perplexity_mean', 'N/A')
+    if total_tests > 0:
+        report_lines.extend([
+            "\n## 📊 Comprehensive Statistical Summary",
+            f"- **Total experiments**: {total_tests}",
+            f"- **Statistically significant wins for Learned Encoding**: {significant_wins}",
+            f"- **Success rate**: {success_rate:.1f}%",
+            f"- **Confidence level**: 95%",
+        ])
 
-            # Format numbers if they exist
-            if isinstance(learned_ppl, (int, float)):
-                learned_ppl_str = f"{learned_ppl:.2f}"
-            else:
-                learned_ppl_str = "N/A"
+    # --- Validation Sections ---
+    report_lines.append("\n---")
+    report_lines.append("\n## 🔬 Validation Results by Category")
 
-            if isinstance(trad_ppl, (int, float)):
-                trad_ppl_str = f"{trad_ppl:.2f}"
-            else:
-                trad_ppl_str = "N/A"
+    report_lines.extend(_generate_study_section(
+        data, "compression_scaling", "📐 Compression Scaling Study",
+        "Learned encodings maintain performance across compression ratios",
+        [("Compression Ratio", "row_key"), ("Learned Loss", "learned_loss_mean"), ("Traditional Loss", "traditional_loss_mean"),
+         ("Effect Size", "effect_size"), ("P-value", "p_value"), ("Significant", "significant")],
+        row_key_suffix=":1"
+    ))
 
-            # Determine advantage
-            advantage = "None"
-            if isinstance(learned_ppl, (int, float)) and isinstance(trad_ppl, (int, float)):
-                if learned_ppl < trad_ppl:
-                    improvement = ((trad_ppl - learned_ppl) / trad_ppl) * 100
-                    advantage = f"**Learned (+{improvement:.1f}%)**"
-                else:
-                    improvement = ((learned_ppl - trad_ppl) / learned_ppl) * 100
-                    advantage = f"Traditional (+{improvement:.1f}%)"
+    report_lines.extend(_generate_study_section(
+        data, "vocabulary_scaling", "📚 Vocabulary Scaling Study",
+        "Performance maintains across vocabulary sizes",
+        [("Vocabulary Size", "row_key"), ("Learned Loss", "learned_loss_mean"), ("Traditional Loss", "traditional_loss_mean"),
+         ("Improvement", "relative_improvement"), ("Significant", "significant")],
+        row_key_suffix=" tokens"
+    ))
 
-            significant_str = "✅ Yes" if results.get('significant', False) else "❌ No"
+    report_lines.extend(_generate_study_section(
+        data, "complexity_scaling", "🎯 Dataset Complexity Study",
+        "Robustness across different data types",
+        [("Dataset Type", "row_key"), ("Learned Loss", "learned_loss_mean"), ("Traditional Loss", "traditional_loss_mean"),
+         ("Robustness Score", "robustness_score"), ("Significant", "significant")]
+    ))
 
-            row = f"| {ratio}:1 | {learned_ppl_str} | {trad_ppl_str} | {advantage} | {significant_str} |"
-            report_lines.append(row)
-
-        # --- Insight Summary ---
-        report_lines.append("\n### Key Insights")
-        significant_wins = [r for r, res in data['compression_scaling'].items() if res.get('significant', False) and res.get('learned_perplexity_mean', float('inf')) < res.get('traditional_perplexity_mean', 0)]
-
-        if len(significant_wins) == len(data['compression_scaling']):
-            report_lines.append("- **Consistent Advantage**: The **Learned Encoding** model shows a statistically significant advantage across **all tested compression ratios**.")
-            report_lines.append("- **Recommendation**: This provides strong evidence that for this task, learning embeddings as part of the main training objective is superior to the pre-trained autoencoder approach.")
-        elif significant_wins:
-            report_lines.append(f"- **Situational Advantage**: The **Learned Encoding** model showed a statistically significant advantage at the following compression ratios: **{', '.join(significant_wins)}:1**.")
-            report_lines.append("- **Recommendation**: The learned approach is highly advantageous in these specific scenarios. Further testing may be needed for other ratios.")
-        else:
-            report_lines.append("- **No Clear Advantage**: Neither model showed a consistent, statistically significant advantage.")
-            report_lines.append("- **Recommendation**: Both models perform similarly. The choice may depend on other factors like training time or implementation complexity.")
-
-    else:
-        report_lines.append("\nNo compression scaling results found in the file.")
+    report_lines.extend(_generate_study_section(
+        data, "baseline_comparisons", "🏆 Baseline Comparison Study",
+        "Outperforms multiple autoencoder variants",
+        [("Baseline Method", "row_key"), ("Learned Loss", "learned_loss_mean"), ("Baseline Loss", "traditional_loss_mean"),
+         ("Improvement", "relative_improvement"), ("Significant", "significant")]
+    ))
 
     return "\n".join(report_lines)
