@@ -31,22 +31,37 @@ Traditional approaches use autoencoders to compress embeddings in a separate tra
 
 ## 🚀 Quick Start
 
-```bash
-# Clone the repository
-git clone https://github.com/MikeyBeez/learned-encoding-experiment.git
-cd learned-encoding-experiment
+1.  **Set up the environment:**
+    ```bash
+    # Clone the repository
+    git clone https://github.com/MikeyBeez/learned-encoding-experiment.git
+    cd learned-encoding-experiment
 
-# Run the experiment (no dependencies required!)
-python3 pure_python_experiment.py
-```
+    # Install dependencies (PyTorch, Hugging Face datasets, etc.)
+    python3 run_test.py
+    ```
 
-**Expected output:**
-```
-🎯 Experiment Result:
-✅ SUCCESS: Learned encoding performs as well as traditional approach!
-✅ Achieved 8.0:1 compression with maintained performance
-✅ Validates hypothesis: Signal emerges from token relationships
-```
+2.  **Run the Real-World Validation:**
+    ```bash
+    # Run the compression scaling study on the WikiText-2 dataset
+    python3 academic_validation_framework.py
+    ```
+    This will train both the learned and traditional models across several compression ratios and save the results to `real_world_validation_results.json`.
+
+## 🔬 Experimental Validation
+
+This project has evolved from a simple proof-of-concept to a robust framework for real-world validation.
+
+### Initial Proof of Concept
+The initial experiments (`pure_python_experiment.py`) were run on synthetic data with a simplified training process (gradient approximation). These experiments validated the core hypothesis: that learning encodings as part of a single objective can match the performance of a two-stage autoencoder approach while offering significant memory savings.
+
+### Real-World Validation Framework
+The current implementation (`academic_validation_framework.py` and `real_world_experiment.py`) provides a full-featured framework for running experiments on real-world datasets using PyTorch.
+
+- **Real Datasets:** The new framework uses the Hugging Face `datasets` library to download and process standard datasets like WikiText-2.
+- **End-to-End Training:** Models are trained with proper backpropagation, optimizers (Adam), and loss functions (Cross-Entropy).
+- **Rigorous Comparison:** The framework is designed to run studies comparing the learned encoding approach against the traditional autoencoder baseline across different dimensions, such as compression ratios.
+- **Extensible:** The new structure makes it easy to add new datasets, models, and experiments.
 
 ## 📊 Architecture Comparison
 
@@ -81,23 +96,6 @@ python3 pure_python_experiment.py
 - **Current**: 50K vocab × 4096D = 200M embedding parameters
 - **Our approach**: 50K vocab × 512D = 25M parameters (8:1 compression)
 - **Benefit**: Massive memory savings + better task optimization
-
-## 🔬 Experimental Validation
-
-### Setup
-- **Vocabulary**: 20 tokens
-- **Compression**: 32D → 4D (8:1 ratio)
-- **Training**: 200 pattern-based sequences, 25 epochs
-- **Comparison**: Learned vs Traditional (autoencoder-based)
-
-### Results
-```
-Final Performance:
-  Learned Encoding:     3.001 loss
-  Traditional Approach: 2.994 loss
-  Performance Ratio:    1.00x (essentially equal)
-  Memory Savings:       87.5%
-```
 
 ## 💡 Why This Matters
 
@@ -138,13 +136,13 @@ loss = -log P(next_token | learned_encodings(context))  # Single objective!
 
 ```
 learned-encoding-experiment/
-├── pure_python_experiment.py      # Main validated experiment (no dependencies)
-├── learned_encoding_experiment.py # Advanced version w/ visualization  
-├── run_test.py                     # Quick test runner
-├── README.md                       # This file
-├── CONTRIBUTING.md                 # Research extensions guide
-├── experiment_results.json        # Detailed experimental data
-└── LICENSE                         # MIT License
+├── academic_validation_framework.py # Main entry point for real-world validation
+├── real_world_experiment.py         # PyTorch models and data pipelines
+├── pure_python_experiment.py        # Original simplified experiment (no dependencies)
+├── learned_encoding_experiment.py   # Advanced numpy-based experiment w/ visualization
+├── run_test.py                      # Environment setup and dependency installer
+├── README.md                        # This file
+...
 ```
 
 ## 🚀 Next Steps
