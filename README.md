@@ -26,20 +26,12 @@ This repository contains research on learning token encodings during training as
 - ✅ Realistic data with token dependencies
 - ✅ Proper train/test methodology with statistical analysis
 
-## 📁 Repository Contents
+## 📁 Repository Structure
 
-### Core Files
-
-- **`corrected_experiment.py`** - Fixed implementation addressing all issues
-- **`CORRECTED_PAPER.md`** - Revised paper with honest results  
-- **`DR_FUTURO_RESPONSE.md`** - Detailed response to peer review feedback
-- **`corrected_results.json`** - Honest experimental results
-
-### Legacy Files (For Reference)
-
-- **`learned_encoding_experiment.py`** - Original implementation (with issues)
-- **`paper.md`** - Original paper (methodological problems)
-- **`VALIDATION_RESULTS.md`** - Original results (invalid due to implementation issues)
+- **`paper.md`**: The complete, corrected research paper.
+- **`corrected_experiment.py`**: The Python script to reproduce the experiments and results discussed in the paper.
+- **`DR_FUTURO_RESPONSE.md`**: A detailed summary of the peer review feedback and the corresponding corrections made.
+- **`archive/`**: A directory containing the original, flawed experiment scripts and previous versions of the paper for historical context.
 
 ## 🎯 Current Results Summary
 
@@ -50,20 +42,22 @@ This repository contains research on learning token encodings during training as
 | 8:1         | 0.058±0.009 | 0.071±0.013    | -0.013     | 75.3%         |
 | 16:1        | 0.042±0.007 | 0.038±0.009    | +0.004     | 81.8%         |
 
-## 🔧 Running the Corrected Experiments
+## 🔧 Running the Experiment
+
+To run the corrected experiment and reproduce the results, execute the following command:
 
 ```bash
-# Run the corrected experiment with all fixes
 python corrected_experiment.py
-
-# Results will be saved to corrected_results.json
 ```
+The script will save the results to `corrected_results.json`.
 
-## 📖 Reading the Research
+## 📖 How to Read the Research
 
-1. **Start with**: `CORRECTED_PAPER.md` - The corrected research paper
-2. **Understand fixes**: `DR_FUTURO_RESPONSE.md` - Details on what was corrected
-3. **See implementation**: `corrected_experiment.py` - Working code
+For a complete understanding of the research and its history, we recommend the following order:
+
+1.  **`paper.md`**: Start with the final, corrected paper to understand the methodology and results.
+2.  **`DR_FUTURO_RESPONSE.md`**: Read this to understand the specific methodological flaws that were identified and addressed.
+3.  **`corrected_experiment.py`**: Review the source code to see the implementation of the corrected experiment.
 
 ## 🤝 Peer Review and Scientific Integrity
 
