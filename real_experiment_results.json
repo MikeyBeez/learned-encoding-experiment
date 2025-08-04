@@ -1,0 +1,15 @@
+{
+  "compression_scaling": {
+    "4.0": {
+      "learned_mean": 428.0891467401327,
+      "learned_std": 0.0,
+      "learned_ci": 0.0,
+      "traditional_mean": 428.26659065861793,
+      "traditional_std": 0.0,
+      "traditional_ci": 0.0,
+      "sample_size": 1
+    }
+  },
+  "vocabulary_scaling": {},
+  "architecture_ablations": {}
+}

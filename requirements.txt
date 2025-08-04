@@ -1,0 +1,6 @@
+torch==2.2.1
+torchvision==0.17.1
+torchaudio==2.2.1
+torchtext==0.17.1
+numpy<2.0
+portalocker
